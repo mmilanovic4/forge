@@ -15,6 +15,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { PasswordInput } from "@/components/password-input";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -59,9 +60,8 @@ export default function ResetPasswordPage() {
         <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -71,7 +71,6 @@ export default function ResetPasswordPage() {
             <Label htmlFor="confirm">Confirm password</Label>
             <Input
               id="confirm"
-              type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required

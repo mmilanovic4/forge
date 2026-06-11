@@ -168,9 +168,8 @@ function SecurityTab() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Current password</Label>
-            <Input
+            <PasswordInput
               id="currentPassword"
-              type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -178,9 +177,8 @@ function SecurityTab() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="newPassword">New password</Label>
-            <Input
+            <PasswordInput
               id="newPassword"
-              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -188,9 +186,8 @@ function SecurityTab() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">Confirm new password</Label>
-            <Input
+            <PasswordInput
               id="confirm"
-              type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required
@@ -320,6 +317,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PasswordInput } from "@/components/password-input";
 
 function DangerTab() {
   const router = useRouter();
