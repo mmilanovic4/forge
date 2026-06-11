@@ -18,6 +18,7 @@ export function Profile() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [createdAt, setCreatedAt] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export function Profile() {
         setFirstName(data.user.firstName ?? "");
         setLastName(data.user.lastName ?? "");
         setEmail(data.user.email ?? "");
+        setCreatedAt(data.user.createdAt ?? null);
       }
     });
   }, []);
@@ -80,6 +82,21 @@ export function Profile() {
             <p className="text-muted-foreground text-xs">
               Email cannot be changed.
             </p>
+          </div>
+          <div className="space-y-2">
+            <Label>Member since</Label>
+            <Input
+              value={
+                createdAt
+                  ? new Date(createdAt).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : ""
+              }
+              disabled
+            />
           </div>
           <Button type="submit" disabled={loading || !firstName || !lastName}>
             {loading ? "Saving..." : "Save changes"}

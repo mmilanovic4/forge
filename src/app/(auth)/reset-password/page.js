@@ -21,6 +21,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const error = searchParams.get("error");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,28 @@ export default function ResetPasswordPage() {
     router.push("/login");
   }
 
+  if (error) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Invalid or expired link</CardTitle>
+          <CardDescription>
+            This password reset link is invalid or has expired. Please request a
+            new one.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button
+            className="w-full"
+            onClick={() => router.push("/forgot-password")}
+          >
+            Request new link
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -69,7 +92,7 @@ export default function ResetPasswordPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">Confirm password</Label>
-            <Input
+            <PasswordInput
               id="confirm"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
