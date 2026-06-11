@@ -1,8 +1,8 @@
-# Forge
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/mmilanovic4/forge/main/src/app/icon.svg" width="48" height="48" />
 </p>
+
+# Forge
 
 A minimal Next.js boilerplate with authentication, database and a component library ready to go.
 
