@@ -83,9 +83,9 @@ async function UsersTable({ page, limit, search }) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <SearchInput defaultValue={search} limit={limit} />
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <span>Rows per page</span>

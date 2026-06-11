@@ -30,7 +30,7 @@ export function SearchInput({ defaultValue = "", limit }) {
       placeholder="Search by name..."
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      className="w-64"
+      className="w-full sm:w-64"
     />
   );
 }
