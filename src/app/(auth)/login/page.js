@@ -33,7 +33,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await authClient.signIn.email({
+    const { data, error } = await authClient.signIn.email({
       email,
       password,
     });
@@ -47,6 +47,8 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
+
+    if (data?.twoFactorRedirect) return;
 
     router.push("/dashboard");
   }

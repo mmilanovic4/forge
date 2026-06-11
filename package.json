@@ -26,6 +26,7 @@
     "nodemailer": "^8.0.11",
     "pg": "^8.21.0",
     "prisma": "^7.8.0",
+    "qrcode.react": "^4.2.0",
     "radix-ui": "^1.5.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
