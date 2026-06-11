@@ -85,4 +85,4 @@ Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:30
 
 - **Google** — [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → Create OAuth 2.0 Client ID
   - Authorized JavaScript origins: `{APP_URL}`
-  - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`
+  - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`
