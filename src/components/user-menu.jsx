@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
+import { LogOut, Settings, Users } from "lucide-react";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -38,15 +40,21 @@ export function UserMenu({ firstName, lastName, email }) {
         </div>
         <DropdownMenuItem
           className="cursor-pointer"
+          onClick={() => router.push("/users")}
+        >
+          <Users className="mr-2 h-4 w-4" />
+          Users
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
           onClick={() => router.push("/settings/profile")}
         >
+          <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="text-destructive cursor-pointer"
-          onClick={handleSignOut}
-        >
+        <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
