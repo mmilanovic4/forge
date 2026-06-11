@@ -1,14 +1,32 @@
+"use client";
+
+import { use } from "react";
+import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Profile } from "./tab-profile";
 import { Security } from "./tab-security";
 import { Sessions } from "./tab-sessions";
 import { DangerZone } from "./tab-danger-zone";
 
-export default function Settings() {
+const VALID_TABS = ["profile", "security", "sessions", "danger"];
+
+export default function Settings({ params }) {
+  const router = useRouter();
+  const { activeTab } = use(params);
+
+  if (!VALID_TABS.includes(activeTab)) {
+    notFound();
+  }
+
+  function handleTabChange(value) {
+    router.push(`/settings/${value}`);
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">Settings</h1>
-      <Tabs defaultValue="profile">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6 w-full">
           <TabsTrigger value="profile" className="flex-1">
             Profile
