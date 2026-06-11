@@ -65,3 +65,17 @@ Open [http://localhost:3000](http://localhost:3000).
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret (optional) |
 | `GOOGLE_CLIENT_ID`     | Google OAuth app client ID (optional)     |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth app client secret (optional) |
+
+## Social Auth
+
+GitHub and Google OAuth are supported but not configured by default. To enable them, create OAuth apps and add your credentials to `.env`.
+
+Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:3000`).
+
+- **GitHub** — [github.com/settings/developers](https://github.com/settings/developers) → New OAuth App
+  - Homepage URL: `{APP_URL}`
+  - Callback URL: `{APP_URL}/api/auth/callback/github`
+
+- **Google** — [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → Create OAuth 2.0 Client ID
+  - Authorized JavaScript origins: `{APP_URL}`
+  - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`

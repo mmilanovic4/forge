@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function RegisterPage() {
         <CardDescription>Sign up to get started</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4 pb-6">
+        <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -83,8 +84,6 @@ export default function RegisterPage() {
               required
             />
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
           <Button
             type="submit"
             className="w-full"
@@ -92,14 +91,49 @@ export default function RegisterPage() {
           >
             {loading ? "Loading..." : "Create account"}
           </Button>
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-muted-foreground text-sm">
-              Already have an account?
-            </p>
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
+          <div className="flex items-center gap-2">
+            <Separator className="flex-1" />
+            <span className="text-muted-foreground text-xs">
+              or continue with
+            </span>
+            <Separator className="flex-1" />
           </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: "github",
+                  callbackURL: "/dashboard",
+                })
+              }
+            >
+              GitHub
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: "google",
+                  callbackURL: "/dashboard",
+                })
+              }
+            >
+              Google
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col items-center gap-1">
+          <p className="text-muted-foreground text-sm">
+            Already have an account?
+          </p>
+          <Link href="/login" className="text-primary text-sm hover:underline">
+            Sign in
+          </Link>
         </CardFooter>
       </form>
     </Card>
