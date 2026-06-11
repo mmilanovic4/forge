@@ -19,6 +19,9 @@ export function Sessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const { data: activeSession } = authClient.useSession();
+  const currentToken = activeSession?.session?.token;
+
   useEffect(() => {
     authClient.listSessions().then(({ data }) => {
       setSessions(data ?? []);
@@ -51,6 +54,8 @@ export function Sessions() {
     toast.success("All other sessions revoked.");
   }
 
+  const hasOtherSessions = sessions.some((s) => s.token !== currentToken);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -65,44 +70,48 @@ export function Sessions() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-3">
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex max-w-4/5 flex-col gap-1">
-                    <div className="flex items-center gap-2">
+              {sessions.map((session) => {
+                const isCurrent = session.token === currentToken;
+
+                return (
+                  <div
+                    key={session.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                  >
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {session.userAgent ?? "Unknown device"}
                       </p>
-                      {session.current && (
-                        <Badge variant="outline" className="text-xs">
-                          Current
-                        </Badge>
-                      )}
+                      <p className="text-muted-foreground text-xs">
+                        {new Date(session.createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-xs">
-                      {new Date(session.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
+                    {isCurrent ? (
+                      <Badge variant="outline" className="shrink-0 text-xs">
+                        Current
+                      </Badge>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive shrink-0"
+                        onClick={() => handleRevoke(session)}
+                      >
+                        Revoke
+                      </Button>
+                    )}
                   </div>
-                  {!session.current && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleRevoke(session)}
-                    >
-                      Revoke
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
-            {sessions.length > 1 && (
+            {hasOtherSessions && (
               <Button
                 variant="outline"
                 className="w-full"
