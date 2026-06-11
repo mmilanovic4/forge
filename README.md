@@ -56,15 +56,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Variables
 
-| Variable               | Description                               |
-| ---------------------- | ----------------------------------------- |
-| `DATABASE_URL`         | PostgreSQL connection string              |
-| `BETTER_AUTH_SECRET`   | Random secret string (min 32 chars)       |
-| `BETTER_AUTH_URL`      | Base URL of the app                       |
-| `GITHUB_CLIENT_ID`     | GitHub OAuth app client ID (optional)     |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret (optional) |
-| `GOOGLE_CLIENT_ID`     | Google OAuth app client ID (optional)     |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth app client secret (optional) |
+| Variable               | Description                                        |
+| ---------------------- | -------------------------------------------------- |
+| `DATABASE_URL`         | PostgreSQL connection string                       |
+| `BETTER_AUTH_SECRET`   | Random secret string (min 32 chars)                |
+| `BETTER_AUTH_URL`      | Base URL of the app (e.g. `http://localhost:3000`) |
+| `SMTP_HOST`            | SMTP server host                                   |
+| `SMTP_PORT`            | SMTP server port                                   |
+| `SMTP_USER`            | SMTP username (optional)                           |
+| `SMTP_PASS`            | SMTP password (optional)                           |
+| `SMTP_FROM`            | From email address (e.g. `noreply@example.com`)    |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth app client ID (optional)              |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret (optional)          |
+| `GOOGLE_CLIENT_ID`     | Google OAuth app client ID (optional)              |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth app client secret (optional)          |
 
 ## Social Auth
 
