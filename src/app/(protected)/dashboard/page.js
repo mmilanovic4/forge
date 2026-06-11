@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const user = session.user;
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background">
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
         <div>
           <h1 className="text-2xl font-bold">

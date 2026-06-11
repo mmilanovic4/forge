@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { UserMenu } from "@/components/user-menu";
 import { auth } from "@/lib/auth";
@@ -24,6 +25,7 @@ export default async function ProtectedLayout({ children }) {
         />
       </Header>
       <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }

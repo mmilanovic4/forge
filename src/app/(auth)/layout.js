@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 
 export default function AuthLayout({ children }) {
@@ -7,6 +8,7 @@ export default function AuthLayout({ children }) {
       <main className="flex flex-1 items-center justify-center p-4">
         {children}
       </main>
+      <Footer />
     </div>
   );
 }
