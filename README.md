@@ -28,11 +28,13 @@ A minimal Next.js boilerplate with authentication, database and a component libr
    npm install
 ```
 
-3. Copy the environment file and fill in your values
+3. Create the environment file and fill in your values
 
 ```bash
-   cp .env.example .env
+   touch .env
 ```
+
+See the [Environment Variables](#environment-variables) section below for the required values.
 
 4. Push the database schema
 
