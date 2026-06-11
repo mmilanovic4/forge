@@ -11,14 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserMenu({ name, email }) {
+export function UserMenu({ firstName, lastName, email }) {
   const router = useRouter();
 
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -34,9 +30,17 @@ export function UserMenu({ name, email }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">{name}</p>
+          <p className="text-sm font-medium">
+            {firstName} {lastName}
+          </p>
           <p className="text-muted-foreground text-xs">{email}</p>
         </div>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => router.push("/settings")}
+        >
+          Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-destructive cursor-pointer"

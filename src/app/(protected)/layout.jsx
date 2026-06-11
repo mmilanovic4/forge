@@ -16,7 +16,11 @@ export default async function ProtectedLayout({ children }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header>
-        <UserMenu name={session.user.name} email={session.user.email} />
+        <UserMenu
+          firstName={session.user.firstName}
+          lastName={session.user.lastName}
+          email={session.user.email}
+        />
       </Header>
       <main className="flex-1">{children}</main>
     </div>

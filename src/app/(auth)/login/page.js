@@ -34,7 +34,11 @@ export default function LoginPage() {
     });
 
     if (error) {
-      toast.error(error.message);
+      if (error.code === "EMAIL_NOT_VERIFIED") {
+        toast.error("Please verify your email before signing in.");
+      } else {
+        toast.error(error.message ?? "Something went wrong. Please try again.");
+      }
       setLoading(false);
       return;
     }
@@ -70,6 +74,14 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground text-xs hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
           <Button
             type="submit"

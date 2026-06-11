@@ -20,7 +20,8 @@ import { Separator } from "@/components/ui/separator";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,18 +31,21 @@ export default function RegisterPage() {
     setLoading(true);
 
     const { error } = await authClient.signUp.email({
-      name,
+      name: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
       email,
       password,
+      callbackURL: "/dashboard",
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message ?? "Something went wrong. Please try again.");
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/verify-email");
   }
 
   return (
@@ -53,13 +57,24 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="firstName">First name</Label>
             <Input
-              id="name"
+              id="firstName"
               type="text"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="John"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Doe"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               required
             />
           </div>
@@ -87,7 +102,7 @@ export default function RegisterPage() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !name || !email || !password}
+            disabled={loading || !firstName || !lastName || !email || !password}
           >
             {loading ? "Loading..." : "Create account"}
           </Button>

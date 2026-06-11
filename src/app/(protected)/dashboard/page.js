@@ -16,7 +16,9 @@ export default async function DashboardPage() {
     <div className="bg-background min-h-screen">
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
+          <h1 className="text-2xl font-bold">
+            Welcome back, {user.firstName}!
+          </h1>
           <p className="text-muted-foreground">{user.email}</p>
         </div>
 
