@@ -43,3 +43,5 @@ next-env.d.ts
 /lib/generated/prisma
 /src/generated/
 package-lock.json
+.claude
+.vscode

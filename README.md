@@ -28,7 +28,7 @@ A minimal Next.js boilerplate with authentication, database and a component libr
    npm install
 ```
 
-3. Create the environment file and fill in your values
+3. Create the environment file and fill in your values:
 
 ```bash
    touch .env
