@@ -66,6 +66,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label htmlFor="firstName">First name</Label>
             <Input
+              autoFocus
               id="firstName"
               name="firstName"
               placeholder="John"

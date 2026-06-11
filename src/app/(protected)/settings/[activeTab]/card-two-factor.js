@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback,useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";

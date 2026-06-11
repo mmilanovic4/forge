@@ -86,6 +86,7 @@ export default function ResetPasswordPage() {
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
             <PasswordInput
+              autoFocus
               id="password"
               name="password"
               value={values.password}

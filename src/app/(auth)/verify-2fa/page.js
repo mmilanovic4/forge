@@ -66,6 +66,7 @@ export default function VerifyTwoFactorPage() {
             </Label>
             {useBackupCode ? (
               <Input
+                autoFocus
                 id="code"
                 placeholder="xxxxxxxx"
                 value={values.code}
@@ -74,6 +75,7 @@ export default function VerifyTwoFactorPage() {
               />
             ) : (
               <Input
+                autoFocus
                 id="code"
                 inputMode="numeric"
                 maxLength={6}

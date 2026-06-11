@@ -79,6 +79,7 @@ export default function ForgotPasswordPage() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              autoFocus
               id="email"
               name="email"
               type="email"
@@ -88,7 +89,11 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading || !values.email}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || !values.email}
+          >
             {loading ? "Sending..." : "Send reset link"}
           </Button>
         </CardContent>

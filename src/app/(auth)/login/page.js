@@ -65,6 +65,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              autoFocus
               id="email"
               name="email"
               type="email"

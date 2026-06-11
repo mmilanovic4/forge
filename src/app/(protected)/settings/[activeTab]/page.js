@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { use } from "react";
 
+import { MonitorSmartphone, ShieldCheck, TriangleAlert, UserRound } from "lucide-react";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { DangerZone } from "./tab-danger-zone";
@@ -31,15 +33,19 @@ export default function Settings({ params }) {
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6 w-full">
           <TabsTrigger value="profile" className="flex-1">
+            <UserRound className="mr-2 h-4 w-4" />
             Profile
           </TabsTrigger>
           <TabsTrigger value="security" className="flex-1">
+            <ShieldCheck className="mr-2 h-4 w-4" />
             Security
           </TabsTrigger>
           <TabsTrigger value="sessions" className="flex-1">
+            <MonitorSmartphone className="mr-2 h-4 w-4" />
             Sessions
           </TabsTrigger>
           <TabsTrigger value="danger" className="flex-1">
+            <TriangleAlert className="mr-2 h-4 w-4" />
             Danger Zone
           </TabsTrigger>
         </TabsList>
