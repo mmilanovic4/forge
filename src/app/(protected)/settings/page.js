@@ -16,17 +16,37 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { PasswordInput } from "@/components/password-input";
 
 export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">Settings</h1>
       <Tabs defaultValue="profile">
-        <TabsList className="mb-6">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+        <TabsList className="mb-6 w-full">
+          <TabsTrigger value="profile" className="flex-1">
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex-1">
+            Security
+          </TabsTrigger>
+          <TabsTrigger value="sessions" className="flex-1">
+            Sessions
+          </TabsTrigger>
+          <TabsTrigger value="danger" className="flex-1">
+            Danger Zone
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <ProfileTab />
@@ -78,7 +98,7 @@ function ProfileTab() {
   }
 
   return (
-    <Card className="max-w-md">
+    <Card className="w-full md:max-w-md">
       <CardHeader>
         <CardTitle>Profile</CardTitle>
         <CardDescription>Update your display name.</CardDescription>
@@ -157,7 +177,7 @@ function SecurityTab() {
   }
 
   return (
-    <Card className="max-w-md">
+    <Card className="w-full md:max-w-md">
       <CardHeader>
         <CardTitle>Change password</CardTitle>
         <CardDescription>
@@ -242,7 +262,7 @@ function SessionsTab() {
   }
 
   return (
-    <Card className="max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Active sessions</CardTitle>
         <CardDescription>
@@ -254,42 +274,44 @@ function SessionsTab() {
           <p className="text-muted-foreground text-sm">Loading...</p>
         ) : (
           <>
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className="flex items-center justify-between rounded-lg border p-3"
-              >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <p className="max-w-48 truncate text-sm font-medium">
-                      {session.userAgent ?? "Unknown device"}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <p className="max-w-48 truncate text-sm font-medium">
+                        {session.userAgent ?? "Unknown device"}
+                      </p>
+                      {session.current && (
+                        <Badge variant="outline" className="text-xs">
+                          Current
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      {new Date(session.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
-                    {session.current && (
-                      <Badge variant="outline" className="text-xs">
-                        Current
-                      </Badge>
-                    )}
                   </div>
-                  <p className="text-muted-foreground text-xs">
-                    {new Date(session.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                  {!session.current && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleRevoke(session.token)}
+                    >
+                      Revoke
+                    </Button>
+                  )}
                 </div>
-                {!session.current && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => handleRevoke(session.token)}
-                  >
-                    Revoke
-                  </Button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
             {sessions.length > 1 && (
               <Button
                 variant="outline"
@@ -305,19 +327,6 @@ function SessionsTab() {
     </Card>
   );
 }
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { PasswordInput } from "@/components/password-input";
 
 function DangerTab() {
   const router = useRouter();
@@ -340,7 +349,7 @@ function DangerTab() {
   }
 
   return (
-    <Card className="border-destructive/50 max-w-md">
+    <Card className="border-destructive/50 w-full md:max-w-md">
       <CardHeader>
         <CardTitle className="text-destructive">Danger Zone</CardTitle>
         <CardDescription>
