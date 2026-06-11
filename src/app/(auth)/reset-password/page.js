@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { useForm } from "@/hooks/use-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from "react";
+
 import { toast } from "sonner";
+
+import { PasswordInput } from "@/components/password-input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { PasswordInput } from "@/components/password-input";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "@/hooks/use-form";
+import { authClient } from "@/lib/auth-client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();

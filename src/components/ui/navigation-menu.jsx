@@ -1,9 +1,10 @@
 import * as React from "react";
+
 import { cva } from "class-variance-authority";
+import { ChevronDownIcon } from "lucide-react";
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon } from "lucide-react";
 
 function NavigationMenu({ className, children, viewport = true, ...props }) {
   return (
@@ -127,12 +128,12 @@ function NavigationMenuIndicator({ className, ...props }) {
 
 export {
   NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
   NavigationMenuContent,
-  NavigationMenuTrigger,
-  NavigationMenuLink,
   NavigationMenuIndicator,
-  NavigationMenuViewport,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
+  NavigationMenuViewport,
 };

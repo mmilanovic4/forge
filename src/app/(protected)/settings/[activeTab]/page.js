@@ -1,13 +1,15 @@
 "use client";
 
-import { use } from "react";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
+import { use } from "react";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { DangerZone } from "./tab-danger-zone";
 import { Profile } from "./tab-profile";
 import { Security } from "./tab-security";
 import { Sessions } from "./tab-sessions";
-import { DangerZone } from "./tab-danger-zone";
 
 const VALID_TABS = ["profile", "security", "sessions", "danger"];
 

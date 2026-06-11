@@ -1,5 +1,6 @@
-import { betterFetch } from "@better-fetch/fetch";
 import { NextResponse } from "next/server";
+
+import { betterFetch } from "@better-fetch/fetch";
 
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 const authRoutes = ["/login", "/register"];

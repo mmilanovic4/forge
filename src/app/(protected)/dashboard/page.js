@@ -1,9 +1,10 @@
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserMenu } from "@/components/user-menu";
+import { auth } from "@/lib/auth";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({

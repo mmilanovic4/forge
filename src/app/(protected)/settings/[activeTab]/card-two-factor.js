@@ -1,21 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/lib/auth-client";
-import { useForm } from "@/hooks/use-form";
+import { useCallback,useEffect, useState } from "react";
+
 import { QRCodeSVG } from "qrcode.react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+import { PasswordInput } from "@/components/password-input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +17,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PasswordInput } from "@/components/password-input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "@/hooks/use-form";
+import { authClient } from "@/lib/auth-client";
 
 export function TwoFactor() {
   const [status, setStatus] = useState("loading");
