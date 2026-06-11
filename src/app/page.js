@@ -1,8 +1,14 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
       <div className="flex max-w-md flex-col items-center gap-3">
@@ -15,12 +21,20 @@ export default function HomePage() {
         </p>
       </div>
       <div className="flex gap-3">
-        <Button asChild>
-          <Link href="/register">Sign up</Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/login">Sign in</Link>
-        </Button>
+        {session ? (
+          <Button asChild>
+            <Link href="/dashboard">Go to dashboard</Link>
+          </Button>
+        ) : (
+          <>
+            <Button asChild>
+              <Link href="/register">Sign up</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/login">Sign in</Link>
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

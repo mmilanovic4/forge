@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect,useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
 export function Profile() {
+  const router = useRouter();
   const { values, handleChange, setValues } = useForm({
     id: "",
     firstName: "",
@@ -58,6 +60,7 @@ export function Profile() {
     }
 
     toast.success("Profile updated.");
+    router.refresh();
     setLoading(false);
   }
 
