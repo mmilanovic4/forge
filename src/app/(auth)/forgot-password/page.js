@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/card";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const { values, handleChange } = useForm({ email: "" });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -26,7 +27,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     const { error } = await authClient.requestPasswordReset({
-      email,
+      email: values.email,
       redirectTo: "/reset-password",
     });
 
@@ -46,7 +47,7 @@ export default function ForgotPasswordPage() {
         <CardHeader>
           <CardTitle>Check your email</CardTitle>
           <CardDescription>
-            We sent a password reset link to {email}.
+            We sent a password reset link to {values.email}.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,14 +78,15 @@ export default function ForgotPasswordPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange}
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading || !email}>
+          <Button type="submit" className="w-full" disabled={loading || !values.email}>
             {loading ? "Sending..." : "Send reset link"}
           </Button>
         </CardContent>

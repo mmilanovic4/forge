@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Copy } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,28 +17,37 @@ import {
 import { toast } from "sonner";
 
 export function Profile() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [createdAt, setCreatedAt] = useState(null);
+  const { values, handleChange, setValues } = useForm({
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    createdAt: "",
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     authClient.getSession().then(({ data }) => {
       if (data?.user) {
-        setFirstName(data.user.firstName ?? "");
-        setLastName(data.user.lastName ?? "");
-        setEmail(data.user.email ?? "");
-        setCreatedAt(data.user.createdAt ?? null);
+        setValues({
+          id: data.user.id ?? "",
+          firstName: data.user.firstName ?? "",
+          lastName: data.user.lastName ?? "",
+          email: data.user.email ?? "",
+          createdAt: data.user.createdAt ?? null,
+        });
       }
     });
-  }, []);
+  }, [setValues]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await authClient.updateUser({ firstName, lastName });
+    const { error } = await authClient.updateUser({
+      firstName: values.firstName,
+      lastName: values.lastName,
+    });
 
     if (error) {
       toast.error(error.message ?? "Something went wrong. Please try again.");
@@ -57,12 +68,30 @@ export function Profile() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            <Label>User ID</Label>
+            <div className="relative">
+              <Input value={values.id} disabled className="pr-20" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute inset-y-0 right-1 my-auto h-7"
+                onClick={() => {
+                  navigator.clipboard.writeText(values.id);
+                  toast.success("User ID copied to clipboard");
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="firstName">First name</Label>
             <Input
               id="firstName"
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              name="firstName"
+              value={values.firstName}
+              onChange={handleChange}
               required
             />
           </div>
@@ -70,15 +99,21 @@ export function Profile() {
             <Label htmlFor="lastName">Last name</Label>
             <Input
               id="lastName"
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              name="lastName"
+              value={values.lastName}
+              onChange={handleChange}
               required
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} disabled />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={values.email}
+              disabled
+            />
             <p className="text-muted-foreground text-xs">
               Email cannot be changed.
             </p>
@@ -87,8 +122,8 @@ export function Profile() {
             <Label>Member since</Label>
             <Input
               value={
-                createdAt
-                  ? new Date(createdAt).toLocaleDateString(undefined, {
+                values.createdAt
+                  ? new Date(values.createdAt).toLocaleDateString(undefined, {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -98,7 +133,10 @@ export function Profile() {
               disabled
             />
           </div>
-          <Button type="submit" disabled={loading || !firstName || !lastName}>
+          <Button
+            type="submit"
+            disabled={loading || !values.firstName || !values.lastName}
+          >
             {loading ? "Saving..." : "Save changes"}
           </Button>
         </CardContent>

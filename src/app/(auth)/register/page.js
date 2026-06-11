@@ -18,13 +18,16 @@ import {
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { PasswordInput } from "@/components/password-input";
+import { useForm } from "@/hooks/use-form";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { values, handleChange } = useForm({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -36,11 +39,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     const { error } = await authClient.signUp.email({
-      name: `${firstName} ${lastName}`,
-      firstName,
-      lastName,
-      email,
-      password,
+      name: `${values.firstName} ${values.lastName}`,
+      ...values,
       callbackURL: "/dashboard",
     });
 
@@ -65,10 +65,10 @@ export default function RegisterPage() {
             <Label htmlFor="firstName">First name</Label>
             <Input
               id="firstName"
-              type="text"
+              name="firstName"
               placeholder="John"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={values.firstName}
+              onChange={handleChange}
               required
             />
           </div>
@@ -76,10 +76,10 @@ export default function RegisterPage() {
             <Label htmlFor="lastName">Last name</Label>
             <Input
               id="lastName"
-              type="text"
+              name="lastName"
               placeholder="Doe"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={values.lastName}
+              onChange={handleChange}
               required
             />
           </div>
@@ -87,10 +87,11 @@ export default function RegisterPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -98,15 +99,22 @@ export default function RegisterPage() {
             <Label htmlFor="password">Password</Label>
             <PasswordInput
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={values.password}
+              onChange={handleChange}
               required
             />
           </div>
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !firstName || !lastName || !email || !password}
+            disabled={
+              loading ||
+              !values.firstName ||
+              !values.lastName ||
+              !values.email ||
+              !values.password
+            }
           >
             {loading ? "Loading..." : "Create account"}
           </Button>

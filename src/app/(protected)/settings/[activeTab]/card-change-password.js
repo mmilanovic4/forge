@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,15 +16,17 @@ import { toast } from "sonner";
 import { PasswordInput } from "@/components/password-input";
 
 export function ChangePassword() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const { values, handleChange, reset } = useForm({
+    currentPassword: "",
+    newPassword: "",
+    confirm: "",
+  });
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (newPassword !== confirm) {
+    if (values.newPassword !== values.confirm) {
       toast.error("Passwords do not match.");
       return;
     }
@@ -31,8 +34,8 @@ export function ChangePassword() {
     setLoading(true);
 
     const { error } = await authClient.changePassword({
-      currentPassword,
-      newPassword,
+      currentPassword: values.currentPassword,
+      newPassword: values.newPassword,
       revokeOtherSessions: true,
     });
 
@@ -43,9 +46,7 @@ export function ChangePassword() {
     }
 
     toast.success("Password changed successfully.");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirm("");
+    reset();
     setLoading(false);
   }
 
@@ -63,8 +64,9 @@ export function ChangePassword() {
             <Label htmlFor="currentPassword">Current password</Label>
             <PasswordInput
               id="currentPassword"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              name="currentPassword"
+              value={values.currentPassword}
+              onChange={handleChange}
               required
             />
           </div>
@@ -72,8 +74,9 @@ export function ChangePassword() {
             <Label htmlFor="newPassword">New password</Label>
             <PasswordInput
               id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              name="newPassword"
+              value={values.newPassword}
+              onChange={handleChange}
               required
             />
           </div>
@@ -81,14 +84,20 @@ export function ChangePassword() {
             <Label htmlFor="confirm">Confirm new password</Label>
             <PasswordInput
               id="confirm"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              name="confirm"
+              value={values.confirm}
+              onChange={handleChange}
               required
             />
           </div>
           <Button
             type="submit"
-            disabled={loading || !currentPassword || !newPassword || !confirm}
+            disabled={
+              loading ||
+              !values.currentPassword ||
+              !values.newPassword ||
+              !values.confirm
+            }
           >
             {loading ? "Saving..." : "Save changes"}
           </Button>

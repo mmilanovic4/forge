@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,7 @@ import { toast } from "sonner";
 
 export default function VerifyTwoFactorPage() {
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const { values, setValues } = useForm({ code: "" });
   const [loading, setLoading] = useState(false);
   const [useBackupCode, setUseBackupCode] = useState(false);
 
@@ -26,8 +27,8 @@ export default function VerifyTwoFactorPage() {
     setLoading(true);
 
     const { error } = useBackupCode
-      ? await authClient.twoFactor.verifyBackupCode({ code })
-      : await authClient.twoFactor.verifyTotp({ code });
+      ? await authClient.twoFactor.verifyBackupCode({ code: values.code })
+      : await authClient.twoFactor.verifyTotp({ code: values.code });
 
     if (error) {
       toast.error(error.message ?? "Invalid code. Please try again.");
@@ -36,6 +37,13 @@ export default function VerifyTwoFactorPage() {
     }
 
     router.push("/dashboard");
+  }
+
+  function handleCodeChange(e) {
+    const value = useBackupCode
+      ? e.target.value.trim()
+      : e.target.value.replace(/\D/g, "");
+    setValues({ ...values, code: value });
   }
 
   return (
@@ -57,21 +65,19 @@ export default function VerifyTwoFactorPage() {
             {useBackupCode ? (
               <Input
                 id="code"
-                type="text"
                 placeholder="xxxxxxxx"
-                value={code}
-                onChange={(e) => setCode(e.target.value.trim())}
+                value={values.code}
+                onChange={handleCodeChange}
                 required
               />
             ) : (
               <Input
                 id="code"
-                type="text"
                 inputMode="numeric"
                 maxLength={6}
                 placeholder="000000"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                value={values.code}
+                onChange={handleCodeChange}
                 required
               />
             )}
@@ -79,7 +85,7 @@ export default function VerifyTwoFactorPage() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !code}
+            disabled={loading || !values.code}
           >
             {loading ? "Verifying..." : "Verify"}
           </Button>
@@ -87,7 +93,7 @@ export default function VerifyTwoFactorPage() {
             type="button"
             className="text-muted-foreground w-full text-center text-sm hover:underline"
             onClick={() => {
-              setCode("");
+              setValues({ code: "" });
               setUseBackupCode((v) => !v);
             }}
           >

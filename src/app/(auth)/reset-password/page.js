@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +23,13 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const error = searchParams.get("error");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const { values, handleChange } = useForm({ password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (password !== confirm) {
+    if (values.password !== values.confirm) {
       toast.error("Passwords do not match.");
       return;
     }
@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     const { error } = await authClient.resetPassword({
-      newPassword: password,
+      newPassword: values.password,
       token,
     });
 
@@ -85,8 +85,9 @@ export default function ResetPasswordPage() {
             <Label htmlFor="password">New password</Label>
             <PasswordInput
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={values.password}
+              onChange={handleChange}
               required
             />
           </div>
@@ -94,15 +95,16 @@ export default function ResetPasswordPage() {
             <Label htmlFor="confirm">Confirm password</Label>
             <PasswordInput
               id="confirm"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              name="confirm"
+              value={values.confirm}
+              onChange={handleChange}
               required
             />
           </div>
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !password || !confirm}
+            disabled={loading || !values.password || !values.confirm}
           >
             {loading ? "Resetting..." : "Reset password"}
           </Button>

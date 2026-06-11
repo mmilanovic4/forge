@@ -18,11 +18,11 @@ import {
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { PasswordInput } from "@/components/password-input";
+import { useForm } from "@/hooks/use-form";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { values, handleChange } = useForm({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -34,8 +34,7 @@ export default function LoginPage() {
     setLoading(true);
 
     const { data, error } = await authClient.signIn.email({
-      email,
-      password,
+      ...values,
     });
 
     if (error) {
@@ -65,10 +64,11 @@ export default function LoginPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -76,8 +76,9 @@ export default function LoginPage() {
             <Label htmlFor="password">Password</Label>
             <PasswordInput
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={values.password}
+              onChange={handleChange}
               required
             />
           </div>
@@ -92,7 +93,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !email || !password}
+            disabled={loading || !values.email || !values.password}
           >
             {loading ? "Loading..." : "Sign in"}
           </Button>

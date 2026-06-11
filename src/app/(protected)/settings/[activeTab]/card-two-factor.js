@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useForm } from "@/hooks/use-form";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +31,26 @@ import { PasswordInput } from "@/components/password-input";
 
 export function TwoFactor() {
   const [status, setStatus] = useState("loading");
-  const [password, setPassword] = useState("");
+  const {
+    values: enableValues,
+    handleChange: handleEnableChange,
+    setValues: setEnableValues,
+  } = useForm({
+    password: "",
+  });
+  const { values: verifyValues, setValues: setVerifyValues } = useForm({
+    code: "",
+  });
+  const {
+    values: disableValues,
+    handleChange: handleDisableChange,
+    setValues: setDisableValues,
+  } = useForm({
+    password: "",
+  });
   const [totpUri, setTotpUri] = useState("");
   const [backupCodes, setBackupCodes] = useState([]);
-  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [disablePassword, setDisablePassword] = useState("");
   const [disableLoading, setDisableLoading] = useState(false);
 
   useEffect(() => {
@@ -50,7 +65,9 @@ export function TwoFactor() {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await authClient.twoFactor.enable({ password });
+    const { data, error } = await authClient.twoFactor.enable({
+      password: enableValues.password,
+    });
 
     if (error) {
       toast.error(error.message ?? "Something went wrong. Please try again.");
@@ -60,7 +77,7 @@ export function TwoFactor() {
 
     setTotpUri(data.totpURI);
     setBackupCodes(data.backupCodes);
-    setPassword("");
+    setEnableValues({ password: "" });
     setLoading(false);
     setStatus("setup");
   }
@@ -69,7 +86,9 @@ export function TwoFactor() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await authClient.twoFactor.verifyTotp({ code });
+    const { error } = await authClient.twoFactor.verifyTotp({
+      code: verifyValues.code,
+    });
 
     if (error) {
       toast.error(error.message ?? "Invalid code. Please try again.");
@@ -77,7 +96,7 @@ export function TwoFactor() {
       return;
     }
 
-    setCode("");
+    setVerifyValues({ code: "" });
     setLoading(false);
     setStatus("backup_codes");
   }
@@ -86,7 +105,7 @@ export function TwoFactor() {
     setDisableLoading(true);
 
     const { error } = await authClient.twoFactor.disable({
-      password: disablePassword,
+      password: disableValues.password,
     });
 
     if (error) {
@@ -96,7 +115,7 @@ export function TwoFactor() {
     }
 
     toast.success("Two-factor authentication disabled.");
-    setDisablePassword("");
+    setDisableValues({ password: "" });
     setDisableLoading(false);
     setStatus("disabled");
   }
@@ -148,20 +167,24 @@ export function TwoFactor() {
               <Label htmlFor="tfa-password">Password</Label>
               <PasswordInput
                 id="tfa-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={enableValues.password}
+                onChange={handleEnableChange}
                 required
               />
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={loading || !password}>
+              <Button
+                type="submit"
+                disabled={loading || !enableValues.password}
+              >
                 {loading ? "Setting up..." : "Continue"}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => {
-                  setPassword("");
+                  setEnableValues({ password: "" });
                   setStatus("disabled");
                 }}
               >
@@ -193,16 +216,20 @@ export function TwoFactor() {
               <Label htmlFor="totp-code">Verification code</Label>
               <Input
                 id="totp-code"
-                type="text"
                 inputMode="numeric"
                 maxLength={6}
                 placeholder="000000"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                value={verifyValues.code}
+                onChange={(e) =>
+                  setVerifyValues({ code: e.target.value.replace(/\D/g, "") })
+                }
                 required
               />
             </div>
-            <Button type="submit" disabled={loading || code.length !== 6}>
+            <Button
+              type="submit"
+              disabled={loading || verifyValues.code.length !== 6}
+            >
               {loading ? "Verifying..." : "Verify & Activate"}
             </Button>
           </CardContent>
@@ -275,17 +302,20 @@ export function TwoFactor() {
               <Label htmlFor="disable-password">Password</Label>
               <PasswordInput
                 id="disable-password"
-                value={disablePassword}
-                onChange={(e) => setDisablePassword(e.target.value)}
+                name="password"
+                value={disableValues.password}
+                onChange={handleDisableChange}
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDisablePassword("")}>
+              <AlertDialogCancel
+                onClick={() => setDisableValues({ password: "" })}
+              >
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                disabled={disableLoading || !disablePassword}
+                disabled={disableLoading || !disableValues.password}
                 onClick={handleDisable}
               >
                 {disableLoading ? "Disabling..." : "Disable 2FA"}
