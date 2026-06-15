@@ -1,7 +1,9 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 
+import { AppProvider } from "@/components/app-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { getConfiguredProviders } from "@/lib/auth-providers";
 
 import "./globals.css";
 
@@ -32,7 +34,14 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AppProvider
+            value={{
+              appName: "Forge",
+              providers: getConfiguredProviders(),
+            }}
+          >
+            {children}
+          </AppProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
