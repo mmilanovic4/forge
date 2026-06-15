@@ -11,50 +11,68 @@ A minimal Next.js boilerplate with authentication, database and a component libr
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL running locally
+- Docker (recommended) or PostgreSQL running locally
 
 ### Setup
 
 1. Clone the repo
 
 ```bash
-   git clone https://github.com/mmilanovic4/forge.git
-   cd forge
+git clone https://github.com/mmilanovic4/forge.git
+cd forge
 ```
 
 2. Install dependencies
 
 ```bash
-   npm install
+npm install
 ```
 
 3. Create the environment file and fill in your values:
 
 ```bash
-   touch .env
+touch .env
 ```
 
 See the [Environment Variables](#environment-variables) section below for the required values.
 
-4. Push the database schema
+4. Start the database
 
 ```bash
-   npx prisma db push
+docker compose up -d
 ```
 
-5. Generate the Prisma client
+5. Push the database schema
 
 ```bash
-   npx prisma generate
+npx prisma db push
 ```
 
-6. Start the dev server
+6. Generate the Prisma client
 
 ```bash
-   npm run dev
+npx prisma generate
+```
+
+7. Start the dev server
+
+```bash
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Docker
+
+The included `docker-compose.yml` spins up [PostgreSQL](https://www.postgresql.org/) and [Mailpit](https://mailpit.axllent.org/).
+
+```bash
+docker compose up -d    # start in background
+docker compose down     # stop
+docker compose down -v  # stop and delete all data
+```
+
+Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 
 ## Environment Variables
 
