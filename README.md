@@ -91,6 +91,17 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 | `GOOGLE_CLIENT_ID`     | Google OAuth app client ID (optional)              |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth app client secret (optional)          |
 
+## User Roles
+
+Forge uses two roles managed via [Better Auth](https://www.better-auth.com/)'s admin plugin:
+
+| Role    | Description                                                   |
+| ------- | ------------------------------------------------------------- |
+| `user`  | Default role assigned on registration                         |
+| `admin` | Full access to the admin panel and user management (`/users`) |
+
+Admins can manage other users (ban, unban, change roles, delete) from the `/users` page. An admin cannot ban or delete their own account.
+
 ## Social Auth
 
 GitHub and Google OAuth are supported but not configured by default. To enable them, create OAuth apps and add your credentials to `.env`.
