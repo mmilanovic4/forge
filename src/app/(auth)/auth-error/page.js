@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,7 @@ const errorMessages = {
     "This social account is already linked to another user.",
 };
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const message =
@@ -45,5 +46,13 @@ export default function AuthErrorPage() {
         </Button>
       </CardFooter>
     </Card>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense>
+      <AuthErrorContent />
+    </Suspense>
   );
 }

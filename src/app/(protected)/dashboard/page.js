@@ -1,9 +1,7 @@
 import { headers } from "next/headers";
 
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserMenu } from "@/components/user-menu";
 import { auth } from "@/lib/auth";
 
 export default async function DashboardPage() {
@@ -18,7 +16,7 @@ export default async function DashboardPage() {
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
         <div>
           <h1 className="text-2xl font-bold">
-            Welcome back, {user.firstName}!
+            Welcome back, {user.name || user.firstName}!
           </h1>
           <p className="text-muted-foreground">{user.email}</p>
         </div>

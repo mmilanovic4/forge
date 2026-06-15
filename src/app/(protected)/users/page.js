@@ -1,5 +1,4 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { use } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -132,7 +131,7 @@ async function UsersTable({ page, limit, search }) {
           ) : (
             users.map((user) => {
               const initials =
-                `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+                `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
               return (
                 <TableRow key={user.id}>
                   <TableCell>

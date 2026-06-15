@@ -44,6 +44,7 @@ const eslintConfig = defineConfig([
     rules: {
       "no-undef": "error",
       "no-redeclare": "error",
+      "no-unused-vars": "error",
     },
   },
 ]);

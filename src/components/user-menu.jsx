@@ -17,7 +17,8 @@ import { authClient } from "@/lib/auth-client";
 export function UserMenu({ firstName, lastName, email }) {
   const router = useRouter();
 
-  const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
+  const initials =
+    `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
 
   async function handleSignOut() {
     await authClient.signOut();

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { PasswordInput } from "@/components/password-input";
+import { SocialSignIn } from "@/components/social-sign-in";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
@@ -121,41 +121,7 @@ export default function RegisterPage() {
           >
             {loading ? "Loading..." : "Create account"}
           </Button>
-          <div className="flex items-center gap-2">
-            <Separator className="flex-1" />
-            <span className="text-muted-foreground text-xs">
-              or continue with
-            </span>
-            <Separator className="flex-1" />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={() =>
-                authClient.signIn.social({
-                  provider: "github",
-                  callbackURL: "/dashboard",
-                })
-              }
-            >
-              GitHub
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={() =>
-                authClient.signIn.social({
-                  provider: "google",
-                  callbackURL: "/dashboard",
-                })
-              }
-            >
-              Google
-            </Button>
-          </div>
+          <SocialSignIn />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">
