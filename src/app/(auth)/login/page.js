@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
+import { useAppContext } from "@/components/app-provider";
 import { PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { emailEnabled } = useAppContext();
   const { values, handleChange } = useForm({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
@@ -87,14 +89,16 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div className="flex justify-end">
-            <Link
-              href="/forgot-password"
-              className="text-muted-foreground text-xs hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
+          {emailEnabled && (
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-muted-foreground text-xs hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
           <Button
             type="submit"
             className="w-full"

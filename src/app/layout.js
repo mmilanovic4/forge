@@ -38,6 +38,7 @@ export default function RootLayout({ children }) {
             value={{
               appName: "Forge",
               providers: getConfiguredProviders(),
+              email: !!(process.env.SMTP_HOST && process.env.SMTP_FROM),
             }}
           >
             {children}

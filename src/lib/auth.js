@@ -5,6 +5,8 @@ import { admin, twoFactor } from "better-auth/plugins";
 import { db } from "./db";
 import { transporter } from "./email";
 
+const emailEnabled = !!(process.env.SMTP_HOST && process.env.SMTP_FROM);
+
 export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
@@ -26,13 +28,14 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: user.email,
-        subject: "Reset your password",
-        html: `
+    requireEmailVerification: emailEnabled,
+    sendResetPassword: emailEnabled
+      ? async ({ user, url }) => {
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: user.email,
+            subject: "Reset your password",
+            html: `
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;font-family:sans-serif;color:#111;">
     <tr><td style="padding:32px 0 16px;">
       <p style="font-size:20px;font-weight:600;margin:0;">Reset your password</p>
@@ -48,23 +51,25 @@ export const auth = betterAuth({
     </td></tr>
   </table>
 `,
-      });
-    },
+          });
+        }
+      : undefined,
   },
   account: {
     accountLinking: {
       enabled: false,
     },
   },
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: user.email,
-        subject: "Verify your email",
-        html: `
+  emailVerification: emailEnabled
+    ? {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: true,
+        sendVerificationEmail: async ({ user, url }) => {
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: user.email,
+            subject: "Verify your email",
+            html: `
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;font-family:sans-serif;color:#111;">
     <tr><td style="padding:32px 0 16px;">
       <p style="font-size:20px;font-weight:600;margin:0;">Verify your email</p>
@@ -80,9 +85,10 @@ export const auth = betterAuth({
     </td></tr>
   </table>
 `,
-      });
-    },
-  },
+          });
+        },
+      }
+    : undefined,
   socialProviders: {
     // Discord
     ...(process.env.DISCORD_CLIENT_ID &&
