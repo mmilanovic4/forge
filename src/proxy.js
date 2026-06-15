@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { betterFetch } from "@better-fetch/fetch";
 
-const protectedRoutes = ["/dashboard", "/profile", "/settings"];
+const protectedRoutes = ["/dashboard", "/profile", "/settings", "users"];
 const authRoutes = ["/login", "/register"];
 
 export default async function proxy(request) {
@@ -36,6 +36,7 @@ export const config = {
     "/dashboard/:path*",
     "/profile/:path*",
     "/settings/:path*",
+    "/users/:path*",
     "/login",
     "/register",
   ],

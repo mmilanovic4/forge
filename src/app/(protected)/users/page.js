@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { use } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,9 +21,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { listAllUsers } from "@/lib/data-helper";
 
 import { SearchInput } from "./search-input";
+import { UserActions } from "./user-actions";
 
 const LIMIT_OPTIONS = [10, 20, 50];
 const DEFAULT_LIMIT = 10;
@@ -61,25 +65,23 @@ export default function UsersPage({ searchParams }) {
 }
 
 async function UsersTable({ page, limit, search }) {
-  const where = search
-    ? {
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-        ],
-      }
-    : undefined;
+  const hdrs = await headers();
 
-  const skip = (page - 1) * limit;
-
-  const [users, total] = await Promise.all([
-    db.user.findMany({ where, orderBy: { createdAt: "desc" }, skip, take: limit }),
-    db.user.count({ where }),
+  const [session, usersData] = await Promise.all([
+    auth.api.getSession({ headers: hdrs }),
+    listAllUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
+
+  const isAdmin = session?.user?.role === "admin";
+  const currentUserId = session?.user?.id;
+
+  const users = usersData?.users ?? [];
+  const total = usersData?.total ?? 0;
 
   const totalPages = Math.ceil(total / limit);
   const safePage = Math.min(page, totalPages || 1);
   const pageNumbers = getPageNumbers(safePage, totalPages);
+  const skip = (page - 1) * limit;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -110,16 +112,18 @@ async function UsersTable({ page, limit, search }) {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Email verified</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>2FA</TableHead>
             <TableHead>Joined</TableHead>
+            {isAdmin && <TableHead />}
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={isAdmin ? 7 : 6}
                 className="text-muted-foreground py-8 text-center"
               >
                 No users found.
@@ -148,8 +152,15 @@ async function UsersTable({ page, limit, search }) {
                     {user.email}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.emailVerified ? "default" : "outline"}>
-                      {user.emailVerified ? "Verified" : "Pending"}
+                    <Badge
+                      variant={user.role === "admin" ? "default" : "secondary"}
+                    >
+                      {user.role ?? "user"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.banned ? "destructive" : "outline"}>
+                      {user.banned ? "Banned" : "Active"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -166,6 +177,11 @@ async function UsersTable({ page, limit, search }) {
                       year: "numeric",
                     })}
                   </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <UserActions user={user} currentUserId={currentUserId} />
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })

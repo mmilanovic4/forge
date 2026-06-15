@@ -16,6 +16,10 @@ model User {
   emailVerified     Boolean
   image             String?
   twoFactorEnabled  Boolean     @default(false)
+  role              String?
+  banned            Boolean?    @default(false)
+  banReason         String?
+  banExpires        DateTime?
   createdAt         DateTime
   updatedAt         DateTime
   sessions          Session[]
@@ -37,15 +41,16 @@ model TwoFactor {
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime
+  updatedAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("session")
 }

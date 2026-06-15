@@ -42,6 +42,8 @@ export default function LoginPage() {
     if (error) {
       if (error.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before signing in.");
+      } else if (error.code === "USER_BANNED") {
+        toast.error("Your account has been banned. Please contact support.");
       } else {
         toast.error(error.message ?? "Something went wrong. Please try again.");
       }
