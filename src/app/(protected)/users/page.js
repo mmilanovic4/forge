@@ -37,6 +37,14 @@ function buildUrl(page, limit, search) {
   return `/users?${params.toString()}`;
 }
 
+function getPageNumbers(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+  if (current >= total - 3)
+    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "...", current - 1, current, current + 1, "...", total];
+}
+
 function Highlight({ text, query }) {
   if (!query) return text;
   const index = text.toLowerCase().indexOf(query.toLowerCase());
@@ -50,17 +58,6 @@ function Highlight({ text, query }) {
       {text.slice(index + query.length)}
     </>
   );
-}
-
-export default function UsersPage({ searchParams }) {
-  const { page: pageParam, limit: limitParam, search } = use(searchParams);
-
-  const limit = LIMIT_OPTIONS.includes(Number(limitParam))
-    ? Number(limitParam)
-    : DEFAULT_LIMIT;
-  const page = Math.max(1, Number(pageParam) || 1);
-
-  return <UsersTable page={page} limit={limit} search={search ?? ""} />;
 }
 
 async function UsersTable({ page, limit, search }) {
@@ -239,10 +236,17 @@ async function UsersTable({ page, limit, search }) {
   );
 }
 
-function getPageNumbers(current, total) {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
-  if (current >= total - 3)
-    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
-  return [1, "...", current - 1, current, current + 1, "...", total];
+export const metadata = {
+  title: "Users",
+};
+
+export default function Users({ searchParams }) {
+  const { page: pageParam, limit: limitParam, search } = use(searchParams);
+
+  const limit = LIMIT_OPTIONS.includes(Number(limitParam))
+    ? Number(limitParam)
+    : DEFAULT_LIMIT;
+  const page = Math.max(1, Number(pageParam) || 1);
+
+  return <UsersTable page={page} limit={limit} search={search ?? ""} />;
 }

@@ -4,7 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 
-export default async function DashboardPage() {
+export const metadata = {
+  title: "Dashboard",
+};
+
+export default async function Dashboard() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });

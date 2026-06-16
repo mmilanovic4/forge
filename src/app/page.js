@@ -4,7 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 
-export default async function HomePage() {
+export const metadata = {
+  title: "Home",
+};
+
+export default async function Home() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });

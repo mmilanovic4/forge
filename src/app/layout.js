@@ -17,8 +17,13 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const appName = "Forge";
+
 export const metadata = {
-  title: "Forge",
+  title: {
+    default: appName,
+    template: `%s | ${appName}`,
+  },
   description: "Next.js boilerplate with auth and UI components",
 };
 
@@ -36,7 +41,7 @@ export default function RootLayout({ children }) {
         >
           <AppProvider
             value={{
-              appName: "Forge",
+              appName,
               providers: configuredProviders,
               emailEnabled,
             }}
