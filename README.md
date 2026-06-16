@@ -6,14 +6,12 @@
 
 A minimal Next.js boilerplate with authentication, database and a component library ready to go.
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+
 - Docker (recommended) or PostgreSQL running locally
 
-### Setup
+## Setup
 
 1. Clone the repo
 
