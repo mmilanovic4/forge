@@ -81,11 +81,11 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 | `DATABASE_URL`          | PostgreSQL connection string                       |
 | `BETTER_AUTH_SECRET`    | Random secret string (min 32 chars)                |
 | `BETTER_AUTH_URL`       | Base URL of the app (e.g. `http://localhost:3000`) |
-| `SMTP_HOST`             | SMTP server host                                   |
-| `SMTP_PORT`             | SMTP server port                                   |
+| `SMTP_HOST`             | SMTP server host (optional)                        |
+| `SMTP_PORT`             | SMTP server port (optional)                        |
 | `SMTP_USER`             | SMTP username (optional)                           |
 | `SMTP_PASS`             | SMTP password (optional)                           |
-| `SMTP_FROM`             | From email address (e.g. `noreply@example.com`)    |
+| `SMTP_FROM`             | From email address (optional)                      |
 | `DISCORD_CLIENT_ID`     | Discord OAuth app client ID (optional)             |
 | `DISCORD_CLIENT_SECRET` | Discord OAuth app client secret (optional)         |
 | `GITHUB_CLIENT_ID`      | GitHub OAuth app client ID (optional)              |
@@ -110,6 +110,9 @@ GitHub, Google, and Discord OAuth are supported but not configured by default. T
 
 Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:3000`).
 
+- **Discord** — [discord.com/developers/applications](https://discord.com/developers/applications) → New Application → OAuth2
+  - Redirects: `{APP_URL}/api/auth/callback/discord`
+
 - **GitHub** — [github.com/settings/developers](https://github.com/settings/developers) → New OAuth App
   - Homepage URL: `{APP_URL}`
   - Callback URL: `{APP_URL}/api/auth/callback/github`
@@ -117,6 +120,3 @@ Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:30
 - **Google** — [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → Create OAuth 2.0 Client ID
   - Authorized JavaScript origins: `{APP_URL}`
   - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`
-
-- **Discord** — [discord.com/developers/applications](https://discord.com/developers/applications) → New Application → OAuth2
-  - Redirects: `{APP_URL}/api/auth/callback/discord`
