@@ -2,10 +2,9 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, twoFactor } from "better-auth/plugins";
 
+import { emailEnabled, socialProviders } from "./auth-config";
 import { db } from "./db";
 import { transporter } from "./email";
-
-const emailEnabled = !!(process.env.SMTP_HOST && process.env.SMTP_FROM);
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -89,32 +88,7 @@ export const auth = betterAuth({
         },
       }
     : undefined,
-  socialProviders: {
-    // Discord
-    ...(process.env.DISCORD_CLIENT_ID &&
-      process.env.DISCORD_CLIENT_SECRET && {
-        discord: {
-          clientId: process.env.DISCORD_CLIENT_ID,
-          clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        },
-      }),
-    // GitHub
-    ...(process.env.GITHUB_CLIENT_ID &&
-      process.env.GITHUB_CLIENT_SECRET && {
-        github: {
-          clientId: process.env.GITHUB_CLIENT_ID,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        },
-      }),
-    // Google
-    ...(process.env.GOOGLE_CLIENT_ID &&
-      process.env.GOOGLE_CLIENT_SECRET && {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        },
-      }),
-  },
+  socialProviders,
   plugins: [
     admin({
       defaultRole: "user",

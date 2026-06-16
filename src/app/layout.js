@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { AppProvider } from "@/components/app-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { getConfiguredProviders } from "@/lib/auth-providers";
+import { configuredProviders, emailEnabled } from "@/lib/auth-config";
 
 import "./globals.css";
 
@@ -37,8 +37,8 @@ export default function RootLayout({ children }) {
           <AppProvider
             value={{
               appName: "Forge",
-              providers: getConfiguredProviders(),
-              email: !!(process.env.SMTP_HOST && process.env.SMTP_FROM),
+              providers: configuredProviders,
+              emailEnabled,
             }}
           >
             {children}
