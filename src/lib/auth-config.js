@@ -23,4 +23,25 @@ export const socialProviders = Object.fromEntries(
   ),
 );
 
+export const providerProfileMap = {
+  google: (profile) => {
+    return {
+      firstName: profile.given_name,
+      lastName: profile.family_name,
+      image: null,
+    };
+  },
+  github: () => {
+    return {
+      image: null,
+    };
+  },
+  discord: (profile) => {
+    return {
+      email: profile.email || `${profile.id}@discord.placeholder`,
+      image: null,
+    };
+  },
+};
+
 export const configuredProviders = Object.keys(socialProviders);

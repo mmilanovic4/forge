@@ -45,3 +45,5 @@ next-env.d.ts
 package-lock.json
 .claude
 .vscode
+
+certificates
