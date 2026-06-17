@@ -23,7 +23,13 @@ const conditionalPlugins = [];
 
 const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
 
-if (authMethod === "otp") {
+if (!emailEnabled && (authMethod === "otp" || authMethod === "magic-link")) {
+  throw new Error(
+    `AUTH_METHOD="${authMethod}" requires SMTP (SMTP_HOST + SMTP_FROM) to be configured.`,
+  );
+}
+
+if (emailEnabled && authMethod === "otp") {
   conditionalPlugins.push(
     emailOTP({
       async sendVerificationOTP({ email, otp }) {
@@ -36,7 +42,7 @@ if (authMethod === "otp") {
       },
     }),
   );
-} else if (authMethod === "magic-link") {
+} else if (emailEnabled && authMethod === "magic-link") {
   conditionalPlugins.push(
     magicLink({
       async sendMagicLink({ email, url }) {
