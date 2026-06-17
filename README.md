@@ -123,7 +123,7 @@ Admins can manage other users (ban, unban, change roles, delete) from the `/user
 
 ## Social Auth
 
-GitHub, Google, and Discord OAuth are supported but not configured by default. To enable them, create OAuth apps and add your credentials to `.env`.
+GitHub, Google and Discord OAuth are supported but not configured by default. To enable them, create OAuth apps and add your credentials to `.env`.
 
 Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:3000`).
 
