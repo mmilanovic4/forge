@@ -6,7 +6,9 @@ import { storage } from "@/lib/storage";
 export async function GET(_, ctx) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
-    return { error: "You must be signed in to upload." };
+    return new Response("You must be signed in to view this file.", {
+      status: 401,
+    });
   }
 
   const { key } = await ctx.params;
