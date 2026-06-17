@@ -74,23 +74,28 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 
 ## Environment Variables
 
-| Variable                  | Description                                        |
-| ------------------------- | -------------------------------------------------- |
-| `DATABASE_URL`            | PostgreSQL connection string                       |
-| `BETTER_AUTH_SECRET`      | Random secret string (min 32 chars)                |
-| `BETTER_AUTH_URL`         | Base URL of the app (e.g. `http://localhost:3000`) |
-| `SMTP_HOST`               | SMTP server host (optional)                        |
-| `SMTP_PORT`               | SMTP server port (optional)                        |
-| `SMTP_USER`               | SMTP username (optional)                           |
-| `SMTP_PASS`               | SMTP password (optional)                           |
-| `SMTP_FROM`               | From email address (optional)                      |
-| `NEXT_PUBLIC_AUTH_METHOD` | Login method (optional) [`otp`, `magic-link`]      |
-| `DISCORD_CLIENT_ID`       | Discord OAuth app client ID (optional)             |
-| `DISCORD_CLIENT_SECRET`   | Discord OAuth app client secret (optional)         |
-| `GITHUB_CLIENT_ID`        | GitHub OAuth app client ID (optional)              |
-| `GITHUB_CLIENT_SECRET`    | GitHub OAuth app client secret (optional)          |
-| `GOOGLE_CLIENT_ID`        | Google OAuth app client ID (optional)              |
-| `GOOGLE_CLIENT_SECRET`    | Google OAuth app client secret (optional)          |
+| Variable                  | Description                                           |
+| ------------------------- | ----------------------------------------------------- |
+| `DATABASE_URL`            | PostgreSQL connection string                          |
+| `BETTER_AUTH_SECRET`      | Random secret string (min 32 chars)                   |
+| `BETTER_AUTH_URL`         | Base URL of the app (e.g. `http://localhost:3000`)    |
+| `SMTP_HOST`               | SMTP server host (optional)                           |
+| `SMTP_PORT`               | SMTP server port (optional)                           |
+| `SMTP_USER`               | SMTP username (optional)                              |
+| `SMTP_PASS`               | SMTP password (optional)                              |
+| `SMTP_FROM`               | From email address (optional)                         |
+| `NEXT_PUBLIC_AUTH_METHOD` | Login method (optional) [`otp`, `magic-link`]         |
+| `DISCORD_CLIENT_ID`       | Discord OAuth app client ID (optional)                |
+| `DISCORD_CLIENT_SECRET`   | Discord OAuth app client secret (optional)            |
+| `GITHUB_CLIENT_ID`        | GitHub OAuth app client ID (optional)                 |
+| `GITHUB_CLIENT_SECRET`    | GitHub OAuth app client secret (optional)             |
+| `GOOGLE_CLIENT_ID`        | Google OAuth app client ID (optional)                 |
+| `GOOGLE_CLIENT_SECRET`    | Google OAuth app client secret (optional)             |
+| `S3_BUCKET`               | Bucket name for file uploads (optional)               |
+| `S3_REGION`               | Bucket region (optional)                              |
+| `S3_ACCESS_KEY_ID`        | S3 access key ID (optional)                           |
+| `S3_SECRET_ACCESS_KEY`    | S3 secret access key (optional)                       |
+| `S3_ENDPOINT`             | Custom endpoint for S3-compatible services (optional) |
 
 ## Auth Method
 
@@ -132,3 +137,17 @@ Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:30
 - **Google** — [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → Create OAuth 2.0 Client ID
   - Authorized JavaScript origins: `{APP_URL}`
   - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`
+
+## File Storage
+
+File uploads (such as profile avatars) are stored in any S3-compatible object storage — [AWS S3](https://aws.amazon.com/s3/), [Cloudflare R2](https://developers.cloudflare.com/r2/), [MinIO](https://min.io/) and others, all work with the same variables.
+
+For local development, the included `docker-compose.yml` runs MinIO and creates the bucket automatically. Add the following to `.env`:
+
+```bash
+S3_BUCKET=forge-uploads
+S3_REGION=eu-central-raccoon-city
+S3_ACCESS_KEY_ID=forge
+S3_SECRET_ACCESS_KEY=forgeforge
+S3_ENDPOINT=http://localhost:9000
+```

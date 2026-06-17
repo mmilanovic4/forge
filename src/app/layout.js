@@ -4,6 +4,7 @@ import { AppProvider } from "@/components/app-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { activeProviders, emailEnabled } from "@/lib/auth-config";
+import { s3Enabled } from "@/lib/storage/config";
 
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
                 label,
               })),
               emailEnabled,
+              s3Enabled,
             }}
           >
             {children}

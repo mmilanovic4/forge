@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
+import { removeImageAction } from "@/app/actions/upload";
+import { useAppContext } from "@/components/app-provider";
+import { FileUpload } from "@/components/file-upload";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,9 +30,12 @@ export function Profile() {
     firstName: "",
     lastName: "",
     email: "",
+    image: "",
     createdAt: "",
   });
   const [loading, setLoading] = useState(false);
+
+  const { s3Enabled } = useAppContext();
 
   useEffect(() => {
     authClient.getSession().then(({ data }) => {
@@ -38,11 +45,35 @@ export function Profile() {
           firstName: data.user.firstName ?? "",
           lastName: data.user.lastName ?? "",
           email: data.user.email ?? "",
+          image: data.user.image ?? "",
           createdAt: data.user.createdAt ?? null,
         });
       }
     });
   }, [setValues]);
+
+  async function handleAvatarUploaded({ url }) {
+    const { error } = await authClient.updateUser({ image: url });
+    if (error) {
+      toast.error(error.message ?? "Could not update avatar.");
+      return;
+    }
+    setValues((prev) => ({ ...prev, image: url }));
+    toast.success("Avatar updated.");
+    router.refresh();
+  }
+
+  async function handleRemoveAvatar() {
+    await removeImageAction(values.image);
+    const { error } = await authClient.updateUser({ image: null });
+    if (error) {
+      toast.error(error.message ?? "Could not remove avatar.");
+      return;
+    }
+    setValues((prev) => ({ ...prev, image: "" }));
+    toast.success("Avatar removed.");
+    router.refresh();
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -64,9 +95,12 @@ export function Profile() {
     setLoading(false);
   }
 
+  const initials =
+    `${values.firstName?.[0] || ""}${values.lastName?.[0] || ""}`.toUpperCase();
+
   return (
     <div className="grid grid-cols-2 items-start gap-6">
-      <Card className="col-span-2 md:col-span-1">
+      <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>Update your profile.</CardDescription>
@@ -148,6 +182,43 @@ export function Profile() {
           </CardContent>
         </form>
       </Card>
+
+      {s3Enabled && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Avatar</CardTitle>
+            <CardDescription>Update your profile photo.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center">
+              <Avatar size="lg">
+                {values.image && (
+                  <AvatarImage src={values.image} alt={initials} />
+                )}
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            </div>
+            <FileUpload
+              accept="image/*"
+              className="w-full p-4"
+              onUploaded={handleAvatarUploaded}
+            />
+            {values.image && (
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive h-auto p-0"
+                  onClick={handleRemoveAvatar}
+                >
+                  Remove avatar
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

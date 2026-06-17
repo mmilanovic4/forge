@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { LogOut, Settings, Users } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 
-export function UserMenu({ firstName, lastName, email }) {
+export function UserMenu({ user: { firstName, lastName, email, image } }) {
   const router = useRouter();
 
   const initials =
@@ -29,6 +29,7 @@ export function UserMenu({ firstName, lastName, email }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="cursor-pointer">
+          {image && <AvatarImage src={image} alt={initials} />}
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
