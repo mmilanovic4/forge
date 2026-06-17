@@ -43,13 +43,13 @@ docker compose up -d
 5. Push the database schema
 
 ```bash
-npx prisma db push
+npm run db:push
 ```
 
 6. Generate the Prisma client
 
 ```bash
-npx prisma generate
+npm run prisma:generate
 ```
 
 7. Start the dev server
