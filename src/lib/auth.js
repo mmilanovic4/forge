@@ -2,20 +2,14 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, emailOTP, magicLink, twoFactor } from "better-auth/plugins";
 
-import {
-  emailEnabled,
-  providerProfileMap,
-  socialProviders,
-} from "./auth-config";
+import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
 import { transporter } from "./email";
 
-const enrichedSocialProviders = Object.fromEntries(
-  Object.entries(socialProviders).map(([key, config]) => [
-    key,
-    providerProfileMap[key]
-      ? { ...config, mapProfileToUser: providerProfileMap[key] }
-      : config,
+const socialProviders = Object.fromEntries(
+  activeProviders.map(({ id, clientId, clientSecret, mapProfileToUser }) => [
+    id,
+    { clientId, clientSecret, mapProfileToUser },
   ]),
 );
 
@@ -163,7 +157,7 @@ export const auth = betterAuth({
         },
       }
     : undefined,
-  socialProviders: enrichedSocialProviders,
+  socialProviders,
   plugins: [
     admin({
       defaultRole: "user",

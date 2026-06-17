@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { AppProvider } from "@/components/app-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { configuredProviders, emailEnabled } from "@/lib/auth-config";
+import { activeProviders, emailEnabled } from "@/lib/auth-config";
 
 import "./globals.css";
 
@@ -42,7 +42,10 @@ export default function RootLayout({ children }) {
           <AppProvider
             value={{
               appName,
-              providers: configuredProviders,
+              providers: activeProviders.map(({ id, label }) => ({
+                id,
+                label,
+              })),
               emailEnabled,
             }}
           >

@@ -4,12 +4,6 @@ import { useAppContext } from "./app-provider";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 
-const PROVIDER_LABELS = {
-  discord: "Discord",
-  github: "GitHub",
-  google: "Google",
-};
-
 export function SocialSignIn() {
   const { providers } = useAppContext();
 
@@ -25,21 +19,21 @@ export function SocialSignIn() {
         <Separator className="flex-1" />
       </div>
       <div className="flex gap-2">
-        {providers.map((provider) => {
+        {providers.map(({ id, label }) => {
           return (
             <Button
-              key={provider}
+              key={id}
               type="button"
               variant="outline"
               className="flex-1"
               onClick={() =>
                 authClient.signIn.social({
-                  provider,
+                  provider: id,
                   callbackURL: "/dashboard",
                 })
               }
             >
-              {PROVIDER_LABELS[provider] || provider}
+              {label}
             </Button>
           );
         })}
