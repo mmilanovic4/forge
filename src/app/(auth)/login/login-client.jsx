@@ -23,11 +23,18 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
+const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
+
+const isPasswordless = (authMethod) => {
+  return authMethod === "otp" || authMethod === "magic-link";
+};
+
 export function LoginClient() {
   const router = useRouter();
   const { emailEnabled } = useAppContext();
   const { values, handleChange } = useForm({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   useEffect(() => {
     authClient.signOut();
@@ -37,9 +44,62 @@ export function LoginClient() {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await authClient.signIn.email({
-      ...values,
-    });
+    // otp
+    if (authMethod === "otp") {
+      if (!otpSent) {
+        const { error } = await authClient.emailOtp.sendVerificationOtp({
+          email: values.email,
+          type: "sign-in",
+        });
+
+        if (error) {
+          toast.error(
+            error.message ?? "Something went wrong. Please try again.",
+          );
+          setLoading(false);
+          return;
+        }
+
+        setOtpSent(true);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await authClient.signIn.emailOtp({
+        email: values.email,
+        otp: values.otp,
+      });
+
+      if (error) {
+        toast.error(error.message ?? "Something went wrong. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      if (data?.twoFactorRedirect) return;
+      router.push("/dashboard");
+      return;
+    }
+
+    // magic-link
+    if (authMethod === "magic-link") {
+      const { error } = await authClient.signIn.magicLink({
+        email: values.email,
+        callbackURL: "/dashboard",
+      });
+
+      if (error) {
+        toast.error(error.message ?? "Something went wrong. Please try again.");
+      } else {
+        toast.success("Magic link sent! Check your email.");
+      }
+
+      setLoading(false);
+      return;
+    }
+
+    // email + password
+    const { data, error } = await authClient.signIn.email({ ...values });
 
     if (error) {
       if (error.code === "EMAIL_NOT_VERIFIED") {
@@ -54,9 +114,22 @@ export function LoginClient() {
     }
 
     if (data?.twoFactorRedirect) return;
-
     router.push("/dashboard");
   }
+
+  const passwordless = isPasswordless(authMethod);
+  const buttonDisabled =
+    loading ||
+    !values.email ||
+    (!passwordless && !values.password) ||
+    (authMethod === "otp" && otpSent && !values.otp);
+
+  const buttonLabel = () => {
+    if (loading) return "Loading...";
+    if (authMethod === "magic-link") return "Send magic link";
+    if (authMethod === "otp") return otpSent ? "Sign in" : "Send code";
+    return "Sign in";
+  };
 
   return (
     <Card className="w-full max-w-md">
@@ -77,34 +150,51 @@ export function LoginClient() {
               value={values.email}
               onChange={handleChange}
               required
+              disabled={authMethod === "otp" && otpSent}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              id="password"
-              name="password"
-              value={values.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          {emailEnabled && (
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-muted-foreground text-xs hover:underline"
-              >
-                Forgot password?
-              </Link>
+          {authMethod === "otp" && otpSent && (
+            <div className="space-y-2">
+              <Label htmlFor="otp">Code</Label>
+              <Input
+                autoFocus
+                id="otp"
+                name="otp"
+                type="text"
+                inputMode="numeric"
+                placeholder="123456"
+                value={values.otp ?? ""}
+                onChange={handleChange}
+                required
+              />
             </div>
           )}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading || !values.email || !values.password}
-          >
-            {loading ? "Loading..." : "Sign in"}
+          {!passwordless && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  value={values.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              {emailEnabled && (
+                <div className="flex justify-end">
+                  <Link
+                    href="/forgot-password"
+                    className="text-muted-foreground text-xs hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
+          <Button type="submit" className="w-full" disabled={buttonDisabled}>
+            {buttonLabel()}
           </Button>
           <SocialSignIn />
         </CardContent>
