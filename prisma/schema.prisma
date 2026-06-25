@@ -8,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id                String      @id
-  name              String
-  firstName         String?
-  lastName          String?
-  email             String      @unique
-  emailVerified     Boolean
-  image             String?
-  twoFactorEnabled  Boolean     @default(false)
-  role              String?
-  banned            Boolean?    @default(false)
-  banReason         String?
-  banExpires        DateTime?
-  createdAt         DateTime
-  updatedAt         DateTime
-  sessions          Session[]
-  accounts          Account[]
-  twoFactors        TwoFactor[]
+  id               String      @id
+  name             String
+  firstName        String?
+  lastName         String?
+  email            String      @unique
+  emailVerified    Boolean
+  image            String?
+  twoFactorEnabled Boolean     @default(false)
+  role             String?
+  banned           Boolean?    @default(false)
+  banReason        String?
+  banExpires       DateTime?
+  createdAt        DateTime
+  updatedAt        DateTime
+  sessions         Session[]
+  accounts         Account[]
+  twoFactors       TwoFactor[]
+  passkeys         Passkey[]
 
   @@map("user")
 }
@@ -83,4 +84,23 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("passkey")
 }

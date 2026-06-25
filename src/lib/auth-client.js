@@ -1,5 +1,6 @@
 "use client";
 
+import { passkeyClient } from "@better-auth/passkey/client";
 import {
   adminClient,
   emailOTPClient,
@@ -24,6 +25,7 @@ export const authClient = createAuthClient({
     twoFactorClient({
       twoFactorPage: "/verify-2fa",
     }),
+    passkeyClient(),
     ...conditionalClientPlugins,
   ],
 });

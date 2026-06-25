@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useAppContext } from "@/components/app-provider";
+import { PasskeySignIn } from "@/components/passkey-sign-in";
 import { PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
 import { Button } from "@/components/ui/button";
@@ -196,6 +197,7 @@ export function LoginClient() {
           <Button type="submit" className="w-full" disabled={buttonDisabled}>
             {buttonLabel()}
           </Button>
+          <PasskeySignIn className="w-full" />
           <SocialSignIn />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">

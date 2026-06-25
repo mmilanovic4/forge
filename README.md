@@ -110,6 +110,21 @@ If `NEXT_PUBLIC_AUTH_METHOD` is not set, Forge defaults to password-based authen
 
 > **Note:** Both `otp` and `magic-link` require SMTP to be configured, as they rely on email delivery.
 
+## Passkeys
+
+Passkeys (WebAuthn / FIDO2) are supported out of the box and are **additive** — they sit alongside whatever primary login method is configured (`otp`, `magic-link` or password), rather than replacing it. A single account can have a password (or email login) and one or more passkeys at the same time.
+
+There are two ways to sign in with a passkey on the login screen, both of which work **without typing an email**:
+
+- **Autofill (conditional UI)** — when the browser has a saved passkey, it offers it directly from the email field, so the user signs in with a single tap.
+- **"Sign in with a passkey" button** — an explicit fallback for browsers or situations where autofill doesn't trigger.
+  Users add and remove passkeys from their account settings while signed in. Passkeys work with both platform authenticators (Touch ID, Face ID, Windows Hello, Android biometrics) and roaming security keys (e.g. YubiKey); the browser lets the user choose.
+
+A few things to know:
+
+- WebAuthn requires a **secure context**. In production the app must be served over HTTPS; `localhost` is exempt for local development.
+- Passkey sign-in is a passwordless (non-credential) path, so it is **not** gated by the two-factor challenge by default — a passkey login completes in one step.
+
 ## User Roles
 
 Forge uses two roles managed via [Better Auth](https://www.better-auth.com/)'s admin plugin:

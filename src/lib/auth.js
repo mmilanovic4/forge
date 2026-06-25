@@ -1,3 +1,4 @@
+import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, emailOTP, magicLink, twoFactor } from "better-auth/plugins";
@@ -120,6 +121,12 @@ export const auth = betterAuth({
     }),
     twoFactor({
       issuer: "forge",
+    }),
+    passkey({
+      rpName: "forge",
+      registration: {
+        requireSession: true,
+      },
     }),
     ...conditionalPlugins,
   ],
