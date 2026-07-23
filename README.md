@@ -166,3 +166,9 @@ S3_ACCESS_KEY_ID=forge
 S3_SECRET_ACCESS_KEY=forgeforge
 S3_ENDPOINT=http://localhost:9000
 ```
+
+## CI
+
+`.github/workflows/build.yml` runs `next build` on every push and pull request, so a broken build gets caught automatically instead of being found by hand. It needs no secrets or configuration — it fails the run on any build error and on any Turbopack warning.
+
+Since this repo is meant to be cloned as a starting point, the workflow comes with it and will start running on your own fork the moment you push. If you don't want that, just delete the file.
