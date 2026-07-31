@@ -46,6 +46,7 @@ export function SecurityChecklist({
   hasPassword,
   passkeyCount,
   socialAccounts,
+  hasSocialProviders,
 }) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -69,6 +70,15 @@ export function SecurityChecklist({
     (passkeyCount > 0 ? 1 : 0) +
     (socialAccounts.length > 0 ? 1 : 0);
 
+  // Only suggest what this deployment actually offers — social sign-in is
+  // opt-in, so the passkey may be the sole alternative.
+  const suggestions = [
+    passkeyCount === 0 && "add a passkey",
+    hasSocialProviders &&
+      socialAccounts.length === 0 &&
+      "connect another sign-in method",
+  ].filter(Boolean);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -78,12 +88,11 @@ export function SecurityChecklist({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {independentMethods < 2 && (
+        {independentMethods < 2 && suggestions.length > 0 && (
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
             <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
             <p>
-              You only have one way to sign in. Add a passkey or connect another
-              sign-in method so you don&apos;t get locked out.
+              {`You only have one way to sign in — ${suggestions.join(" or ")} so you don't get locked out.`}
             </p>
           </div>
         )}

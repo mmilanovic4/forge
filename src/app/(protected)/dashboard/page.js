@@ -15,6 +15,7 @@ import { auth } from "@/lib/auth";
 import { activeProviders, emailEnabled } from "@/lib/auth-config";
 
 import { SecurityChecklist } from "./security-checklist";
+import { StatCards } from "./stat-cards";
 
 export const metadata = {
   title: "Dashboard",
@@ -54,6 +55,8 @@ export default async function Dashboard() {
           </div>
         </div>
 
+        <StatCards />
+
         {user.role === "admin" && (
           <Card>
             <CardHeader>
@@ -79,6 +82,7 @@ export default async function Dashboard() {
           hasPassword={hasPassword}
           passkeyCount={passkeys.length}
           socialAccounts={socialAccounts}
+          hasSocialProviders={activeProviders.length > 0}
         />
       </main>
     </div>
