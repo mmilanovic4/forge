@@ -6,7 +6,7 @@
 
 A minimal Next.js boilerplate with authentication, database and a component library ready to go.
 
-![Forge Dashboard](/dashboard.jpg)
+![Forge Dashboard](/docs/dashboard.jpg)
 
 ## Prerequisites
 
