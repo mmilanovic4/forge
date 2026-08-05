@@ -101,7 +101,7 @@ export function ChangePassword() {
               !values.confirm
             }
           >
-            {loading ? "Saving..." : "Save changes"}
+            {loading ? "Saving..." : "Save"}
           </Button>
         </CardContent>
       </form>

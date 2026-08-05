@@ -177,7 +177,7 @@ export function Profile() {
               type="submit"
               disabled={loading || !values.firstName || !values.lastName}
             >
-              {loading ? "Saving..." : "Save changes"}
+              {loading ? "Saving..." : "Save"}
             </Button>
           </CardContent>
         </form>

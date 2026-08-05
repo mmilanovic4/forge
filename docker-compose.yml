@@ -1,7 +1,7 @@
 services:
   # Database
   db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: forge
@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   # Mail
   mailpit:
@@ -20,7 +20,7 @@ services:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI
 
-  # S3-compatible storage
+  # MinIO - S3-compatible storage
   minio:
     image: minio/minio
     restart: unless-stopped
@@ -29,20 +29,25 @@ services:
       MINIO_ROOT_USER: forge
       MINIO_ROOT_PASSWORD: forgeforge
     ports:
-      - "9000:9000" # S3 API
-      - "9001:9001" # Web console
+      - "9000:9000" # API
+      - "9001:9001" # Web UI
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
-  # One-shot: creates the bucket on startup, then exits.
   minio-init:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      until mc alias set local http://minio:9000 forge forgeforge; do sleep 1; done;
-      mc mb --ignore-existing local/forge-uploads;
+      mc alias set local http://minio:9000 forge forgeforge;
+      mc mb --ignore-existing local/uploads;
       "
 
 volumes:

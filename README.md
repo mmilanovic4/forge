@@ -162,7 +162,7 @@ File uploads (such as profile avatars) are stored in any S3-compatible object st
 For local development, the included `docker-compose.yml` runs MinIO and creates the bucket automatically. Add the following to `.env`:
 
 ```bash
-S3_BUCKET=forge-uploads
+S3_BUCKET=uploads
 S3_REGION=eu-central-raccoon-city
 S3_ACCESS_KEY_ID=forge
 S3_SECRET_ACCESS_KEY=forgeforge
