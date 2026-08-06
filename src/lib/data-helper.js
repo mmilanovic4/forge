@@ -1,8 +1,11 @@
 import "server-only";
 
 import { db } from "./db";
+import { requireSession } from "./session";
 
 export async function listAllUsers({ search, limit, offset }) {
+  await requireSession();
+
   const where = search
     ? { name: { contains: search, mode: "insensitive" } }
     : undefined;
@@ -21,6 +24,8 @@ export async function listAllUsers({ search, limit, offset }) {
 }
 
 export async function getUserStats() {
+  await requireSession();
+
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 

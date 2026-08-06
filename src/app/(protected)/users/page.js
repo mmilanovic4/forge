@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { Suspense } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { auth } from "@/lib/auth";
 import { listAllUsers } from "@/lib/data-helper";
+import { getSession } from "@/lib/session";
 
 import { SearchInput } from "./search-input";
 import { UserActions } from "./user-actions";
@@ -61,10 +60,8 @@ function Highlight({ text, query }) {
 }
 
 async function UsersTable({ page, limit, search }) {
-  const hdrs = await headers();
-
   const [session, usersData] = await Promise.all([
-    auth.api.getSession({ headers: hdrs }),
+    getSession(),
     listAllUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
 

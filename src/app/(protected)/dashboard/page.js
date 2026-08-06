@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { activeProviders, emailEnabled } from "@/lib/auth-config";
+import { getSession } from "@/lib/session";
 
 import { SecurityChecklist } from "./security-checklist";
 import { StatCards } from "./stat-cards";
@@ -25,7 +26,7 @@ export default async function Dashboard() {
   const hdrs = await headers();
 
   const [session, accounts, passkeys] = await Promise.all([
-    auth.api.getSession({ headers: hdrs }),
+    getSession(),
     auth.api.listUserAccounts({ headers: hdrs }),
     auth.api.listPasskeys({ headers: hdrs }),
   ]);
