@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,9 +21,7 @@ const errorMessages = {
     "This social account is already linked to another user.",
 };
 
-export function AuthErrorClient() {
-  const searchParams = useSearchParams();
-  const error = searchParams.get("error");
+export function AuthErrorCard({ error }) {
   const message =
     errorMessages[error] ?? "Something went wrong. Please try again.";
 

@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { toast } from "sonner";
 
-import { useAppContext } from "@/components/app-provider";
 import { PasskeySignIn } from "@/components/passkey-sign-in";
 import { PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
@@ -30,16 +29,11 @@ const isPasswordless = (authMethod) => {
   return authMethod === "otp" || authMethod === "magic-link";
 };
 
-export function LoginClient() {
+export function LoginClient({ emailEnabled, providers }) {
   const router = useRouter();
-  const { emailEnabled } = useAppContext();
   const { values, handleChange } = useForm({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-
-  useEffect(() => {
-    authClient.signOut();
-  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -198,7 +192,7 @@ export function LoginClient() {
             {buttonLabel()}
           </Button>
           <PasskeySignIn className="w-full" />
-          <SocialSignIn />
+          <SocialSignIn providers={providers} />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">

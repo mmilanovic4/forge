@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,11 +18,8 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function ResetPasswordClient() {
+export function ResetPasswordClient({ token }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const error = searchParams.get("error");
   const { values, handleChange } = useForm({ password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
 
@@ -50,28 +46,6 @@ export function ResetPasswordClient() {
 
     toast.success("Password reset successfully.");
     router.push("/login");
-  }
-
-  if (error) {
-    return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Invalid or expired link</CardTitle>
-          <CardDescription>
-            This password reset link is invalid or has expired. Please request a
-            new one.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button
-            className="w-full"
-            onClick={() => router.push("/forgot-password")}
-          >
-            Request new link
-          </Button>
-        </CardFooter>
-      </Card>
-    );
   }
 
   return (

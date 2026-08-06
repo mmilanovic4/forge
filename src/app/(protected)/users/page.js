@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { use } from "react";
+import { Suspense } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -80,29 +80,7 @@ async function UsersTable({ page, limit, search }) {
   const skip = (page - 1) * limit;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <SearchInput defaultValue={search} limit={limit} />
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <span>Rows per page</span>
-            <div className="flex gap-1">
-              {LIMIT_OPTIONS.map((opt) => (
-                <PaginationLink
-                  key={opt}
-                  href={buildUrl(1, opt, search)}
-                  isActive={opt === limit}
-                  size="sm"
-                >
-                  {opt}
-                </PaginationLink>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -235,6 +213,20 @@ async function UsersTable({ page, limit, search }) {
           </Pagination>
         </div>
       )}
+    </>
+  );
+}
+
+function UsersTableSkeleton() {
+  return (
+    <div className="space-y-3" aria-busy="true">
+      <div className="bg-muted/60 h-9 w-full animate-pulse rounded-md" />
+      {Array.from({ length: 5 }, (_, i) => (
+        <div key={i} className="flex items-center gap-3">
+          <div className="bg-muted/40 h-8 w-8 shrink-0 animate-pulse rounded-full" />
+          <div className="bg-muted/40 h-4 flex-1 animate-pulse rounded" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -243,13 +235,48 @@ export const metadata = {
   title: "Users",
 };
 
-export default function Users({ searchParams }) {
-  const { page: pageParam, limit: limitParam, search } = use(searchParams);
+export default async function Users({ searchParams }) {
+  const {
+    page: pageParam,
+    limit: limitParam,
+    search: searchParam,
+  } = await searchParams;
 
   const limit = LIMIT_OPTIONS.includes(Number(limitParam))
     ? Number(limitParam)
     : DEFAULT_LIMIT;
   const page = Math.max(1, Number(pageParam) || 1);
+  const search = searchParam ?? "";
 
-  return <UsersTable page={page} limit={limit} search={search ?? ""} />;
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      {/* Rendered outside the boundary so the shell — and the search box the
+          user is typing into — flushes without waiting on the query. */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <SearchInput defaultValue={search} limit={limit} />
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <span>Rows per page</span>
+            <div className="flex gap-1">
+              {LIMIT_OPTIONS.map((opt) => (
+                <PaginationLink
+                  key={opt}
+                  href={buildUrl(1, opt, search)}
+                  isActive={opt === limit}
+                  size="sm"
+                >
+                  {opt}
+                </PaginationLink>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Suspense fallback={<UsersTableSkeleton />}>
+        <UsersTable page={page} limit={limit} search={search} />
+      </Suspense>
+    </div>
+  );
 }

@@ -1,15 +1,10 @@
-import { Suspense } from "react";
-
-import { AuthErrorClient } from "./auth-error-client";
+import { AuthErrorCard } from "./auth-error-card";
 
 export const metadata = {
   title: "Auth error",
 };
 
-export default function AuthError() {
-  return (
-    <Suspense>
-      <AuthErrorClient />
-    </Suspense>
-  );
+export default async function AuthError({ searchParams }) {
+  const { error } = await searchParams;
+  return <AuthErrorCard error={error} />;
 }

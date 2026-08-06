@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function RegisterClient() {
+export function RegisterClient({ providers }) {
   const router = useRouter();
   const { values, handleChange } = useForm({
     firstName: "",
@@ -31,10 +31,6 @@ export function RegisterClient() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    authClient.signOut();
-  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -121,7 +117,7 @@ export function RegisterClient() {
           >
             {loading ? "Loading..." : "Create account"}
           </Button>
-          <SocialSignIn />
+          <SocialSignIn providers={providers} />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
@@ -31,8 +32,9 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function TwoFactor() {
-  const [status, setStatus] = useState("loading");
+export function TwoFactor({ initialEnabled }) {
+  const router = useRouter();
+  const [status, setStatus] = useState(initialEnabled ? "enabled" : "disabled");
   const {
     values: enableValues,
     handleChange: handleEnableChange,
@@ -54,14 +56,6 @@ export function TwoFactor() {
   const [backupCodes, setBackupCodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [disableLoading, setDisableLoading] = useState(false);
-
-  useEffect(() => {
-    authClient.getSession().then(({ data }) => {
-      if (data?.user) {
-        setStatus(data.user.twoFactorEnabled ? "enabled" : "disabled");
-      }
-    });
-  }, []);
 
   async function handleEnable(e) {
     e.preventDefault();
@@ -120,22 +114,13 @@ export function TwoFactor() {
     setDisableValues({ password: "" });
     setDisableLoading(false);
     setStatus("disabled");
+    router.refresh();
   }
 
   const copyAllCodes = useCallback(() => {
     navigator.clipboard.writeText(backupCodes.join("\n"));
     toast.success("Backup codes copied.");
   }, [backupCodes]);
-
-  if (status === "loading") {
-    return (
-      <Card className="w-full md:max-w-md">
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   if (status === "disabled") {
     return (
@@ -265,6 +250,7 @@ export function TwoFactor() {
                 setBackupCodes([]);
                 setTotpUri("");
                 setStatus("enabled");
+                router.refresh();
               }}
             >
               Done

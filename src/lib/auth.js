@@ -1,11 +1,13 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { twoFactor } from "better-auth/plugins/two-factor";
 
+import { cookiePrefix } from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
 import { transporter } from "./email";
@@ -65,6 +67,11 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
+  advanced: {
+    // Every auth cookie is named `<prefix>.<purpose>`; the library's default
+    // prefix would advertise which auth library this app runs on.
+    cookiePrefix,
+  },
   user: {
     additionalFields: {
       firstName: {
@@ -130,7 +137,15 @@ export const auth = betterAuth({
       registration: {
         requireSession: true,
       },
+      advanced: {
+        // Defaults to "better-auth-passkey", which cookiePrefix would only
+        // wrap, not replace.
+        webAuthnChallengeCookie: "passkey_challenge",
+      },
     }),
     ...conditionalPlugins,
+    // Must stay last: forwards Set-Cookie from auth.api.* calls made inside
+    // Server Actions, which otherwise silently drop the session cookie.
+    nextCookies(),
   ],
 });

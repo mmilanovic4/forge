@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { KeyRound } from "lucide-react";
@@ -29,8 +30,8 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function Passkeys() {
-  const { data: passkeys, isPending } = authClient.useListPasskeys();
+export function Passkeys({ passkeys }) {
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
   const { values, handleChange, setValues } = useForm({ name: "" });
 
@@ -52,6 +53,7 @@ export function Passkeys() {
     }
 
     toast.success("Passkey added.");
+    router.refresh();
   }
 
   async function handleRemove(passkey) {
@@ -65,6 +67,7 @@ export function Passkeys() {
     }
 
     toast.success("Passkey removed.");
+    router.refresh();
   }
 
   return (
@@ -77,9 +80,7 @@ export function Passkeys() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isPending ? (
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        ) : passkeys?.length > 0 ? (
+        {passkeys.length > 0 ? (
           <div className="grid grid-cols-1 gap-3">
             {passkeys.map((passkey) => (
               <div

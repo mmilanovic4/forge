@@ -1,12 +1,11 @@
+"use client";
+
 import { authClient } from "@/lib/auth-client";
 
-import { useAppContext } from "./app-provider";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 
-export function SocialSignIn() {
-  const { providers } = useAppContext();
-
+export function SocialSignIn({ providers }) {
   if (!providers.length) {
     return null;
   }
