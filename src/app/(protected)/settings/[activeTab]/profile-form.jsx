@@ -82,7 +82,7 @@ export function ProfileForm({ user, s3Enabled }) {
 
   return (
     <div className="grid grid-cols-2 items-start gap-6">
-      <Card>
+      <Card className="col-span-2 md:col-span-1">
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>Update your profile.</CardDescription>
@@ -166,7 +166,7 @@ export function ProfileForm({ user, s3Enabled }) {
       </Card>
 
       {s3Enabled && (
-        <Card>
+        <Card className="col-span-2 md:col-span-1">
           <CardHeader>
             <CardTitle>Avatar</CardTitle>
             <CardDescription>Update your profile photo.</CardDescription>
