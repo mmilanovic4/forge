@@ -68,8 +68,9 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   advanced: {
-    // Every auth cookie is named `<prefix>.<purpose>`; the library's default
-    // prefix would advertise which auth library this app runs on.
+    // Groups every auth cookie under one namespace. Replacing the library's
+    // default also keeps its name out of the response, though that is tidiness
+    // rather than hardening — the /api/auth/* routes identify it anyway.
     cookiePrefix,
   },
   user: {
