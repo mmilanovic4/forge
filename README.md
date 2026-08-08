@@ -155,6 +155,15 @@ Replace `{APP_URL}` with your `BETTER_AUTH_URL` value (e.g. `http://localhost:30
   - Authorized JavaScript origins: `{APP_URL}`
   - Authorized redirect URI: `{APP_URL}/api/auth/callback/google`
 
+### Login vs sign-up
+
+`<SocialSignIn requestSignUp>` controls whether a social button is allowed to create a new account or must match an existing one:
+
+- `requestSignUp={false}` (the default) — strict sign-in. If no account exists for that provider/email, the attempt fails instead of creating one. The login page uses this, so clicking "Sign in with Google" for a deleted account fails rather than silently creating a brand-new account with the same email, which would give the impression the deletion didn't really happen.
+- `requestSignUp` (`true`) — sign-up. Creates an account if none exists yet. The register page uses this.
+
+If you'd rather have the login button create an account on demand too (the more lenient, common OAuth pattern), pass `requestSignUp` (`true`) on the `<SocialSignIn>` in `login-client.jsx`.
+
 ## File Storage
 
 File uploads (such as profile avatars) are stored in any S3-compatible object storage — [AWS S3](https://aws.amazon.com/s3/), [Cloudflare R2](https://developers.cloudflare.com/r2/), [MinIO](https://min.io/) and others, all work with the same variables.

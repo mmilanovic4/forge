@@ -192,7 +192,7 @@ export function LoginClient({ emailEnabled, providers }) {
             {buttonLabel()}
           </Button>
           <PasskeySignIn className="w-full" />
-          <SocialSignIn providers={providers} />
+          <SocialSignIn providers={providers} requestSignUp={false} />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">

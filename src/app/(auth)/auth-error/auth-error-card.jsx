@@ -19,6 +19,7 @@ const errorMessages = {
     "An account with this email already exists. Please sign in with your password.",
   social_account_already_linked:
     "This social account is already linked to another user.",
+  signup_disabled: "No account found with this email. Please sign up first.",
 };
 
 export function AuthErrorCard({ error }) {

@@ -21,7 +21,7 @@ import {
 const socialProviders = Object.fromEntries(
   activeProviders.map(({ id, clientId, clientSecret, mapProfileToUser }) => [
     id,
-    { clientId, clientSecret, mapProfileToUser },
+    { clientId, clientSecret, mapProfileToUser, disableImplicitSignUp: true },
   ]),
 );
 
@@ -68,20 +68,17 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   advanced: {
-    // Groups every auth cookie under one namespace. Replacing the library's
-    // default also keeps its name out of the response, though that is tidiness
-    // rather than hardening — the /api/auth/* routes identify it anyway.
     cookiePrefix,
   },
   user: {
     additionalFields: {
       firstName: {
         type: "string",
-        required: true,
+        required: false,
       },
       lastName: {
         type: "string",
-        required: true,
+        required: false,
       },
     },
     deleteUser: {

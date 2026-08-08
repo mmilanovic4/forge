@@ -117,7 +117,7 @@ export function RegisterClient({ providers }) {
           >
             {loading ? "Loading..." : "Create account"}
           </Button>
-          <SocialSignIn providers={providers} />
+          <SocialSignIn providers={providers} requestSignUp />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">
