@@ -183,3 +183,16 @@ S3_ENDPOINT=http://localhost:9000
 `.github/workflows/build.yml` runs `next build` on every push and pull request, so a broken build gets caught automatically instead of being found by hand. It needs no secrets or configuration — it fails the run on any build error and on any Turbopack warning.
 
 Since this repo is meant to be cloned as a starting point, the workflow comes with it and will start running on your own fork the moment you push. If you don't want that, just delete the file.
+
+## Roadmap
+
+Forge is growing from a boilerplate into a self-hostable backend platform.
+Planned work, roughly in order:
+
+- **Multi-tenancy** — organization support, with users belonging to multiple organizations
+- **Authorization** — row-level security in PostgreSQL (most likely), covering storage the same way
+- **API layer** — REST access with API keys, for clients outside the app
+
+> These are intentions, not commitments. The scope, the ordering and the
+> approach may all change — treat this as a sketch of where the project is
+> headed, not as a stable roadmap.
