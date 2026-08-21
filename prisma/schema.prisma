@@ -40,6 +40,8 @@ model TwoFactor {
   lockedUntil             DateTime?
   user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([secret])
   @@map("twoFactor")
 }
 
@@ -55,11 +57,13 @@ model Session {
   impersonatedBy String?
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("session")
 }
 
 model Account {
   id                    String    @id
+  issuer                String
   accountId             String
   providerId            String
   userId                String
@@ -74,6 +78,8 @@ model Account {
   createdAt             DateTime
   updatedAt             DateTime
 
+  @@unique([issuer, accountId])
+  @@index([userId])
   @@map("account")
 }
 
@@ -85,6 +91,7 @@ model Verification {
   createdAt  DateTime?
   updatedAt  DateTime?
 
+  @@index([identifier])
   @@map("verification")
 }
 
