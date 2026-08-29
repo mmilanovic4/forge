@@ -19,7 +19,7 @@ export async function GET(_, ctx) {
 
     const respHeaders = {
       "Content-Type": contentType || "application/octet-stream",
-      "Cache-Control": "public, max-age=31536000, immutable",
+      "Cache-Control": "private, max-age=31536000, immutable",
     };
     if (size) respHeaders["Content-Length"] = String(size);
 
