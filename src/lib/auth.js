@@ -18,6 +18,10 @@ import {
   verifyEmailTpl,
 } from "./email-templates";
 
+// firstName is optional (GitHub never sends one), so fall back to the first
+// word of the name the provider did give us before dropping the greeting.
+const greetingName = (user) => user.firstName || user.name?.split(" ")[0];
+
 const socialProviders = Object.fromEntries(
   activeProviders.map(({ id, clientId, clientSecret, mapProfileToUser }) => [
     id,
@@ -119,7 +123,7 @@ export const auth = betterAuth({
             to: user.email,
             subject: "Reset your password",
             html: resetPasswordEmailTpl({
-              firstName: user.firstName,
+              firstName: greetingName(user),
               url,
             }),
           });
@@ -140,7 +144,7 @@ export const auth = betterAuth({
             from: process.env.SMTP_FROM,
             to: user.email,
             subject: "Verify your email",
-            html: verifyEmailTpl({ firstName: user.firstName, url }),
+            html: verifyEmailTpl({ firstName: greetingName(user), url }),
           });
         },
       }

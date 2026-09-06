@@ -4,6 +4,13 @@ ${content}
 </table>
 `;
 
+// GitHub sign-ups have no firstName, so the sentence has to read correctly
+// with and without the greeting — hence the lowercase `sentence`.
+const opening = (firstName, sentence) =>
+  firstName
+    ? `Hi ${firstName}, ${sentence}`
+    : sentence.charAt(0).toUpperCase() + sentence.slice(1);
+
 const button = (url, label) =>
   `<a href="${url}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">${label}</a>`;
 
@@ -43,7 +50,7 @@ export const resetPasswordEmailTpl = ({ firstName, url }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Reset your password</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Hi ${firstName}, click the button below to reset your password. This link expires in 1 hour.</p>
+    <p style="font-size:14px;margin:0;color:#555;">${opening(firstName, "click the button below to reset your password. This link expires in 1 hour.")}</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     ${button(url, "Reset password")}
@@ -58,7 +65,7 @@ export const verifyEmailTpl = ({ firstName, url }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Verify your email</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Hi ${firstName}, click the button below to verify your email address.</p>
+    <p style="font-size:14px;margin:0;color:#555;">${opening(firstName, "click the button below to verify your email address.")}</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     ${button(url, "Verify email")}

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
+import { getInitials } from "@/lib/user";
 
 export function ProfileForm({ user, s3Enabled }) {
   const router = useRouter();
@@ -77,8 +78,7 @@ export function ProfileForm({ user, s3Enabled }) {
     setLoading(false);
   }
 
-  const initials =
-    `${values.firstName?.[0] || ""}${values.lastName?.[0] || ""}`.toUpperCase();
+  const initials = getInitials(values);
 
   return (
     <div className="grid grid-cols-2 items-start gap-6">

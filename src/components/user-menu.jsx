@@ -13,14 +13,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { getInitials } from "@/lib/user";
 
 export function UserMenu({
   user: { name, firstName, lastName, email, image },
 }) {
   const router = useRouter();
 
-  const initials =
-    `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
+  const initials = getInitials({ firstName, lastName, name });
 
   async function handleSignOut() {
     await authClient.signOut();

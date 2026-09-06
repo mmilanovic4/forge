@@ -49,9 +49,7 @@ export default async function Dashboard() {
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
         <div className="flex flex-wrap items-center">
           <div>
-            <h1 className="text-2xl font-bold">
-              Welcome back, {user.name || user.firstName}!
-            </h1>
+            <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
             <p className="text-muted-foreground">{user.email}</p>
           </div>
         </div>

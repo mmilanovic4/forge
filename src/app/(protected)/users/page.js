@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { listAllUsers } from "@/lib/data-helper";
 import { getSession } from "@/lib/session";
+import { getInitials } from "@/lib/user";
 
 import { SearchInput } from "./search-input";
 import { UserActions } from "./user-actions";
@@ -111,8 +112,7 @@ async function UsersTable({ query, page, limit, search }) {
             </TableRow>
           ) : (
             users.map((user) => {
-              const initials =
-                `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
+              const initials = getInitials(user);
               return (
                 <TableRow key={user.id}>
                   <TableCell>
