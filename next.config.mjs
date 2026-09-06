@@ -5,7 +5,6 @@ const nextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
   generateEtags: false,
-  reactMaxHeadersLength: 0,
   experimental: {
     // Default Server Action body limit is 1MB — too small for image uploads.
     serverActions: {
