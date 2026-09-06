@@ -28,11 +28,20 @@ import { UserActions } from "./user-actions";
 const LIMIT_OPTIONS = [10, 20, 50];
 const DEFAULT_LIMIT = 10;
 
-function buildUrl(page, limit, search) {
+function buildUrl(query, page, limit, search) {
   const params = new URLSearchParams();
+  // Carry over params we don't own (future sort, filters, …). Repeated keys
+  // are kept repeated — that's how a multi-select filter would encode itself.
+  for (const [key, value] of Object.entries(query)) {
+    for (const v of Array.isArray(value) ? value : [value]) {
+      if (v !== undefined) params.append(key, v);
+    }
+  }
+  // set() after append() collapses any duplicates of the keys we do own.
   params.set("page", String(page));
   params.set("limit", String(limit));
   if (search) params.set("search", search);
+  else params.delete("search");
   return `/users?${params.toString()}`;
 }
 
@@ -59,7 +68,7 @@ function Highlight({ text, query }) {
   );
 }
 
-async function UsersTable({ page, limit, search }) {
+async function UsersTable({ query, page, limit, search }) {
   const [session, usersData] = await Promise.all([
     getSession(),
     listAllUsers({ search, limit, offset: (page - 1) * limit }),
@@ -172,7 +181,7 @@ async function UsersTable({ page, limit, search }) {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  href={buildUrl(safePage - 1, limit, search)}
+                  href={buildUrl(query, safePage - 1, limit, search)}
                   aria-disabled={safePage === 1}
                   className={
                     safePage === 1 ? "pointer-events-none opacity-50" : ""
@@ -187,7 +196,7 @@ async function UsersTable({ page, limit, search }) {
                 ) : (
                   <PaginationItem key={n}>
                     <PaginationLink
-                      href={buildUrl(n, limit, search)}
+                      href={buildUrl(query, n, limit, search)}
                       isActive={n === safePage}
                     >
                       {n}
@@ -197,7 +206,7 @@ async function UsersTable({ page, limit, search }) {
               )}
               <PaginationItem>
                 <PaginationNext
-                  href={buildUrl(safePage + 1, limit, search)}
+                  href={buildUrl(query, safePage + 1, limit, search)}
                   aria-disabled={safePage === totalPages}
                   className={
                     safePage === totalPages
@@ -233,11 +242,8 @@ export const metadata = {
 };
 
 export default async function Users({ searchParams }) {
-  const {
-    page: pageParam,
-    limit: limitParam,
-    search: searchParam,
-  } = await searchParams;
+  const query = await searchParams;
+  const { page: pageParam, limit: limitParam, search: searchParam } = query;
 
   const limit = LIMIT_OPTIONS.includes(Number(limitParam))
     ? Number(limitParam)
@@ -259,9 +265,10 @@ export default async function Users({ searchParams }) {
               {LIMIT_OPTIONS.map((opt) => (
                 <PaginationLink
                   key={opt}
-                  href={buildUrl(1, opt, search)}
+                  href={buildUrl(query, 1, opt, search)}
                   isActive={opt === limit}
                   size="sm"
+                  replace
                 >
                   {opt}
                 </PaginationLink>
@@ -272,7 +279,7 @@ export default async function Users({ searchParams }) {
       </div>
 
       <Suspense fallback={<UsersTableSkeleton />}>
-        <UsersTable page={page} limit={limit} search={search} />
+        <UsersTable query={query} page={page} limit={limit} search={search} />
       </Suspense>
     </div>
   );
