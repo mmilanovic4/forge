@@ -70,6 +70,30 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix,
   },
+  databaseHooks: {
+    user: {
+      update: {
+        // `name` is derived, never editable in the UI, so keep it in sync
+        // whenever firstName/lastName move. Every user write in the app goes
+        // through better-auth (profile form, admin plugin, OAuth), so this is
+        // the one place that sees them all.
+        before: (data, context) => {
+          console.log({ data, context });
+          if (data.firstName === undefined && data.lastName === undefined)
+            return;
+          // The hook only receives the changed fields, so fill the other half
+          // from the session user when a caller updates just one of them.
+          const current = context?.context?.session?.user;
+          const firstName = data.firstName ?? current?.firstName;
+          const lastName = data.lastName ?? current?.lastName;
+          const name = [firstName, lastName].filter(Boolean).join(" ").trim();
+          // `name` is non-null in the schema — never blank it out.
+          if (!name) return;
+          return { data: { ...data, name } };
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       firstName: {

@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 
-export function UserMenu({ user: { firstName, lastName, email, image } }) {
+export function UserMenu({
+  user: { name, firstName, lastName, email, image },
+}) {
   const router = useRouter();
 
   const initials =
@@ -35,9 +37,7 @@ export function UserMenu({ user: { firstName, lastName, email, image } }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">
-            {firstName} {lastName}
-          </p>
+          <p className="text-sm font-medium">{name}</p>
           <p className="text-muted-foreground text-xs">{email}</p>
         </div>
         <DropdownMenuItem

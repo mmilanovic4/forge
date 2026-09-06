@@ -54,7 +54,7 @@ function getPageNumbers(current, total) {
 }
 
 function Highlight({ text, query }) {
-  if (!query) return text;
+  if (!text || !query) return text;
   const index = text.toLowerCase().indexOf(query.toLowerCase());
   if (index === -1) return text;
   return (
@@ -126,8 +126,7 @@ async function UsersTable({ query, page, limit, search }) {
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium">
-                        <Highlight text={user.firstName} query={search} />{" "}
-                        <Highlight text={user.lastName} query={search} />
+                        <Highlight text={user.name} query={search} />
                       </span>
                     </div>
                   </TableCell>
