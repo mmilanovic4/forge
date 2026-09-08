@@ -82,7 +82,6 @@ export const auth = betterAuth({
         // through better-auth (profile form, admin plugin, OAuth), so this is
         // the one place that sees them all.
         before: (data, context) => {
-          console.log({ data, context });
           if (data.firstName === undefined && data.lastName === undefined)
             return;
           // The hook only receives the changed fields, so fill the other half
