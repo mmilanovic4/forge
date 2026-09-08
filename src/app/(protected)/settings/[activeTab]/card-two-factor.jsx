@@ -132,7 +132,7 @@ export function TwoFactor({ initialEnabled }) {
             authenticator app each time you sign in.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center justify-end">
           <Button onClick={() => setStatus("enter_password")}>
             Enable 2FA
           </Button>
@@ -160,13 +160,7 @@ export function TwoFactor({ initialEnabled }) {
                 required
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={loading || !enableValues.password}
-              >
-                {loading ? "Setting up..." : "Continue"}
-              </Button>
+            <div className="flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -176,6 +170,12 @@ export function TwoFactor({ initialEnabled }) {
                 }}
               >
                 Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading || !enableValues.password}
+              >
+                {loading ? "Setting up..." : "Continue"}
               </Button>
             </div>
           </CardContent>
@@ -213,12 +213,14 @@ export function TwoFactor({ initialEnabled }) {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              disabled={loading || verifyValues.code.length !== 6}
-            >
-              {loading ? "Verifying..." : "Verify & Activate"}
-            </Button>
+            <div className="flex items-center justify-end">
+              <Button
+                type="submit"
+                disabled={loading || verifyValues.code.length !== 6}
+              >
+                {loading ? "Verifying..." : "Verify & Activate"}
+              </Button>
+            </div>
           </CardContent>
         </form>
       </Card>
@@ -241,7 +243,7 @@ export function TwoFactor({ initialEnabled }) {
               <span key={c}>{c}</span>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-end gap-2">
             <Button variant="outline" onClick={copyAllCodes}>
               Copy all
             </Button>
@@ -272,45 +274,47 @@ export function TwoFactor({ initialEnabled }) {
             2FA is active
           </Badge>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline">Disable 2FA</Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Disable two-factor authentication
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Enter your password to confirm. This will remove the extra
-                security layer from your account.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="space-y-2 px-1 pb-2">
-              <Label htmlFor="disable-password">Password</Label>
-              <PasswordInput
-                id="disable-password"
-                name="password"
-                value={disableValues.password}
-                onChange={handleDisableChange}
-              />
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => setDisableValues({ password: "" })}
-              >
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                disabled={disableLoading || !disableValues.password}
-                onClick={handleDisable}
-              >
-                {disableLoading ? "Disabling..." : "Disable 2FA"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex items-center justify-end">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">Disable 2FA</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Disable two-factor authentication
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Enter your password to confirm. This will remove the extra
+                  security layer from your account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="space-y-2 px-1 pb-2">
+                <Label htmlFor="disable-password">Password</Label>
+                <PasswordInput
+                  id="disable-password"
+                  name="password"
+                  value={disableValues.password}
+                  onChange={handleDisableChange}
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  onClick={() => setDisableValues({ password: "" })}
+                >
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={disableLoading || !disableValues.password}
+                  onClick={handleDisable}
+                >
+                  {disableLoading ? "Disabling..." : "Disable 2FA"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </CardContent>
     </Card>
   );

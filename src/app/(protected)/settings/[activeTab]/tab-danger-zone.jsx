@@ -54,7 +54,7 @@ export function DangerZone() {
           Permanently delete your account and all associated data.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex items-center justify-end">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={loading}>

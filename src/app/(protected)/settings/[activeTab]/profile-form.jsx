@@ -155,12 +155,14 @@ export function ProfileForm({ user, s3Enabled }) {
                 disabled
               />
             </div>
-            <Button
-              type="submit"
-              disabled={loading || !values.firstName || !values.lastName}
-            >
-              {loading ? "Saving..." : "Save"}
-            </Button>
+            <div className="flex items-center justify-end">
+              <Button
+                type="submit"
+                disabled={loading || !values.firstName || !values.lastName}
+              >
+                {loading ? "Saving..." : "Save"}
+              </Button>
+            </div>
           </CardContent>
         </form>
       </Card>

@@ -92,17 +92,19 @@ export function ChangePassword() {
               required
             />
           </div>
-          <Button
-            type="submit"
-            disabled={
-              loading ||
-              !values.currentPassword ||
-              !values.newPassword ||
-              !values.confirm
-            }
-          >
-            {loading ? "Saving..." : "Save"}
-          </Button>
+          <div className="flex items-center justify-end">
+            <Button
+              type="submit"
+              disabled={
+                loading ||
+                !values.currentPassword ||
+                !values.newPassword ||
+                !values.confirm
+              }
+            >
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </div>
         </CardContent>
       </form>
     </Card>
