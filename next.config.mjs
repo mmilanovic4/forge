@@ -1,6 +1,11 @@
 const nextConfig = {
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    // Strips stray console.log/console.debug from production builds, but keeps
+    // the methods src/lib/logger.js writes through.
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["info", "warn", "error"] }
+        : false,
   },
   reactCompiler: true,
   poweredByHeader: false,

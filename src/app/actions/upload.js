@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { storage } from "@/lib/storage";
 import { IMAGE_TYPES, uploadFile } from "@/lib/upload";
 
@@ -32,10 +33,16 @@ export async function removeImageAction(url) {
 
   const prefix = "/api/files/";
   if (typeof url === "string" && url.startsWith(prefix)) {
+    const key = url.slice(prefix.length);
     try {
-      await storage.remove(url.slice(prefix.length));
-    } catch {
-      // Object may already be gone — not an error for the caller.
+      await storage.remove(key);
+    } catch (err) {
+      // Not an error for the caller, but it leaves an orphaned object behind.
+      logger.warn("Failed to remove file", {
+        err,
+        key,
+        userId: session.user.id,
+      });
     }
   }
   return { ok: true };

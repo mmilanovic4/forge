@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logger } from "./logger";
 import { storage } from "./storage";
 
 const EXT_BY_TYPE = {
@@ -37,7 +38,18 @@ export async function uploadFile(
   const ext = EXT_BY_TYPE[contentType] ?? "bin";
   const key = `${prefix}/${crypto.randomUUID()}.${ext}`;
 
-  await storage.put({ key, body: buffer, contentType });
+  try {
+    await storage.put({ key, body: buffer, contentType });
+  } catch (err) {
+    logger.error("Failed to store uploaded file", {
+      err,
+      key,
+      contentType,
+      size: file.size,
+    });
+    // Callers surface this message to the user, so keep storage internals out.
+    throw new Error("Upload failed. Please try again.", { cause: err });
+  }
 
   return { key, contentType };
 }

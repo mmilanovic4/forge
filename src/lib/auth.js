@@ -10,13 +10,14 @@ import { twoFactor } from "better-auth/plugins/two-factor";
 import { cookiePrefix } from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
-import { transporter } from "./email";
+import { sendEmail } from "./email";
 import {
   loginCodeEmailTpl,
   magicLinkEmailTpl,
   resetPasswordEmailTpl,
   verifyEmailTpl,
 } from "./email-templates";
+import { logger } from "./logger";
 
 // firstName is optional (GitHub never sends one), so fall back to the first
 // word of the name the provider did give us before dropping the greeting.
@@ -43,8 +44,7 @@ if (emailEnabled && authMethod === "otp") {
   conditionalPlugins.push(
     emailOTP({
       async sendVerificationOTP({ email, otp }) {
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM,
+        await sendEmail({
           to: email,
           subject: "Your login code",
           html: loginCodeEmailTpl({ otp }),
@@ -56,8 +56,7 @@ if (emailEnabled && authMethod === "otp") {
   conditionalPlugins.push(
     magicLink({
       async sendMagicLink({ email, url }) {
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM,
+        await sendEmail({
           to: email,
           subject: "Your login link",
           html: magicLinkEmailTpl({ url }),
@@ -73,6 +72,18 @@ export const auth = betterAuth({
   }),
   advanced: {
     cookiePrefix,
+  },
+  // Route better-auth's own warnings and errors through the app logger so they
+  // share its format.
+  logger: {
+    log: (level, message, ...args) => {
+      const [first, ...rest] = args;
+      const context =
+        first instanceof Error
+          ? { err: first, ...(rest.length && { args: rest }) }
+          : { ...(args.length && { args }) };
+      logger[level](message, { source: "better-auth", ...context });
+    },
   },
   databaseHooks: {
     user: {
@@ -117,8 +128,7 @@ export const auth = betterAuth({
     requireEmailVerification: emailEnabled,
     sendResetPassword: emailEnabled
       ? async ({ user, url }) => {
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM,
+          await sendEmail({
             to: user.email,
             subject: "Reset your password",
             html: resetPasswordEmailTpl({
@@ -139,8 +149,7 @@ export const auth = betterAuth({
         sendOnSignUp: true,
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM,
+          await sendEmail({
             to: user.email,
             subject: "Verify your email",
             html: verifyEmailTpl({ firstName: greetingName(user), url }),

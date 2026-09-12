@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { storage } from "@/lib/storage";
 
 export async function GET(_, ctx) {
@@ -24,7 +25,11 @@ export async function GET(_, ctx) {
     if (size) respHeaders["Content-Length"] = String(size);
 
     return new Response(body, { headers: respHeaders });
-  } catch {
+  } catch (err) {
+    // A missing key is an expected 404; anything else means storage is failing.
+    if (err.name !== "NoSuchKey") {
+      logger.error("Failed to read file from storage", { err, key: path });
+    }
     return new Response("Not found", { status: 404 });
   }
 }

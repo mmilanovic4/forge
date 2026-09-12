@@ -98,6 +98,8 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 | `S3_ACCESS_KEY_ID`        |          | S3 access key ID                                   |
 | `S3_SECRET_ACCESS_KEY`    |          | S3 secret access key                               |
 | `S3_ENDPOINT`             |          | Custom endpoint for S3-compatible services         |
+| `LOG_LEVEL`               |          | Log level [`debug`, `info`, `warn`, `error`]       |
+| `LOG_FORMAT`              |          | Log format [`json`, `pretty`]                      |
 
 ## Auth Method
 
@@ -177,6 +179,23 @@ S3_ACCESS_KEY_ID=forge
 S3_SECRET_ACCESS_KEY=forgeforge
 S3_ENDPOINT=http://localhost:9000
 ```
+
+## Logging
+
+Server code logs through `src/lib/logger.js`, a small wrapper around `console` with no extra dependencies:
+
+```js
+import { logger } from "@/lib/logger";
+
+logger.info("User signed in", { userId });
+logger.error("Upload failed", { err, key });
+```
+
+In production every entry is a single JSON line (`time`, `level`, `msg` plus the context you pass), ready for AWS CloudWatch or any other log collector that reads stdout/stderr. In development it prints a readable one-liner instead. Pass errors under `err` so their name, message, stack and `cause` are serialized.
+
+Uncaught errors from pages, route handlers, server actions and proxy are logged automatically by `onRequestError` in `src/instrumentation.js`. better-auth and Prisma warnings and errors are routed through the same logger.
+
+By default the level is `info` in production and `debug` in development, and the format is `json` in production and `pretty` in development. Override them with `LOG_LEVEL` and `LOG_FORMAT`.
 
 ## Roadmap
 
