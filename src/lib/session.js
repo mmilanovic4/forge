@@ -1,6 +1,7 @@
 import "server-only";
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { auth } from "./auth";
@@ -19,7 +20,7 @@ export async function requireSession() {
   const session = await getSession();
 
   if (!session?.user) {
-    throw new Error("Unauthorized: no active session.");
+    redirect("/login");
   }
 
   return session;
