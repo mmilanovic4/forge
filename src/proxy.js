@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { betterFetch } from "@better-fetch/fetch";
-
 import { cookiePrefix } from "@/lib/app-config";
+import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 // Auth cookies are `<prefix>.<purpose>`, gaining a `__Secure-` prefix on HTTPS.
@@ -18,18 +17,15 @@ const authRoutes = ["/login", "/register"];
 export default async function proxy(request) {
   const pathname = request.nextUrl.pathname;
 
-  const { data: session, error } = await betterFetch("/api/auth/get-session", {
-    baseURL: request.nextUrl.origin,
-    headers: {
-      cookie: request.headers.get("cookie") ?? "",
-    },
-  });
+  let session = null;
 
-  // A failed lookup reads as "signed out" below and clears the auth cookies.
-  if (error) {
+  try {
+    session = await auth.api.getSession({ headers: request.headers });
+  } catch (error) {
+    // A failed lookup reads as "signed out" below and clears the auth cookies.
     logger.warn("Session lookup failed in proxy", {
+      error: error.message,
       status: error.status,
-      statusText: error.statusText,
       path: pathname,
     });
   }
