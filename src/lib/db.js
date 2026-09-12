@@ -15,10 +15,10 @@ function createClient() {
     ],
   });
   client.$on("warn", (e) =>
-    logger.warn(e.message, { source: "prisma", target: e.target }),
+    logger.warn(e.message.trim(), { source: "prisma", target: e.target }),
   );
   client.$on("error", (e) =>
-    logger.error(e.message, { source: "prisma", target: e.target }),
+    logger.error(e.message.trim(), { source: "prisma", target: e.target }),
   );
   return client;
 }
