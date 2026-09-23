@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import { ChangePassword } from "./card-change-password";
 import { Passkeys } from "./card-passkeys";
@@ -10,7 +11,7 @@ export async function Security() {
   const hdrs = await headers();
 
   const [session, passkeys] = await Promise.all([
-    auth.api.getSession({ headers: hdrs }),
+    getSession(),
     auth.api.listPasskeys({ headers: hdrs }),
   ]);
 

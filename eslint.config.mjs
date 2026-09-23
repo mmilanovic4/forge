@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prisma client output (`npm run db:generate`), not ours to lint.
+    "src/generated/**",
   ]),
   // Disable ESLint formatting rules that would conflict with Prettier.
   eslintConfigPrettier,

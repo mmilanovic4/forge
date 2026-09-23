@@ -5,11 +5,12 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { avatarPrefix, FILES_URL_PREFIX } from "@/lib/files";
 import { logger } from "@/lib/logger";
+import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
 import { IMAGE_TYPES, uploadFile } from "@/lib/upload";
 
 export async function uploadImageAction(_, formData) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session?.user) {
     return { error: "You must be signed in to upload." };
   }
@@ -30,7 +31,7 @@ export async function uploadImageAction(_, formData) {
 // own current one, read from the session rather than trusted from the client.
 export async function removeAvatarAction() {
   const hdrs = await headers();
-  const session = await auth.api.getSession({ headers: hdrs });
+  const session = await getSession();
   if (!session?.user) {
     return { error: "You must be signed in to remove your avatar." };
   }

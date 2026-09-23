@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // Shared by error.js and global-error.js. In production a Server Component
 // error reaches the client stripped down to a generic message plus `digest`,
 // which is also on the server-side log entry (see instrumentation.js) — so
 // that's the one detail worth showing.
-export function ErrorFallback({ error, retry }) {
+export function ErrorFallback({ error, retry, className }) {
   useEffect(() => {
     // Server errors are already logged by onRequestError; this is the only
     // trace a client-side rendering error leaves.
@@ -17,7 +18,12 @@ export function ErrorFallback({ error, retry }) {
   }, [error]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 p-4 text-center">
+    <div
+      className={cn(
+        "flex flex-1 flex-col items-center justify-center gap-6 p-4 text-center",
+        className,
+      )}
+    >
       <div className="flex max-w-md flex-col items-center gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">
           Something went wrong

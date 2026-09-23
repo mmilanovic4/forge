@@ -71,7 +71,7 @@ function Highlight({ text, query }) {
 }
 
 async function UsersTable({ query, page, limit, search }) {
-  const [session, usersData] = await Promise.all([
+  const [session, firstTry] = await Promise.all([
     getSession(),
     listUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
@@ -80,13 +80,20 @@ async function UsersTable({ query, page, limit, search }) {
   const columns = 5 + (organizationsEnabled ? 1 : 0) + (isAdmin ? 1 : 0);
   const currentUserId = session?.user?.id;
 
-  const users = usersData?.users ?? [];
-  const total = usersData?.total ?? 0;
-
+  const total = firstTry?.total ?? 0;
   const totalPages = Math.ceil(total / limit);
   const safePage = Math.min(page, totalPages || 1);
+  const skip = (safePage - 1) * limit;
+
+  // The total is only known once the query ran, so a page past the end (a
+  // stale link, members removed since) costs a second query for the last one.
+  const usersData =
+    safePage === page
+      ? firstTry
+      : await listUsers({ search, limit, offset: skip });
+
+  const users = usersData?.users ?? [];
   const pageNumbers = getPageNumbers(safePage, totalPages);
-  const skip = (page - 1) * limit;
 
   return (
     <>

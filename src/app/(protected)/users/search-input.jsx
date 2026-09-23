@@ -9,14 +9,17 @@ export function SearchInput({ defaultValue = "", limit }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(defaultValue);
-  const isFirstRender = useRef(true);
+  const timer = useRef(null);
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    const timer = setTimeout(() => {
+  // Driven by the keystroke rather than an effect on `value`: an effect also
+  // fires on mount — twice under StrictMode, which slipped past a first-render
+  // guard and reset ?page= to 1 on every visit.
+  function handleChange(e) {
+    const next = e.target.value;
+    setValue(next);
+
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
       // Start from the current query so params we don't own (future sort,
       // filters, …) survive a search.
       const params = new URLSearchParams(searchParams);
@@ -24,19 +27,20 @@ export function SearchInput({ defaultValue = "", limit }) {
       // `limit` is the value the server already validated, so a bogus one in
       // the URL gets normalised away rather than carried along.
       params.set("limit", String(limit));
-      if (value) params.set("search", value);
+      if (next) params.set("search", next);
       else params.delete("search");
       // replace(): a debounced keystroke shouldn't be its own history entry.
       router.replace(`/users?${params.toString()}`, { scroll: false });
     }, 300);
-    return () => clearTimeout(timer);
-  }, [value]);
+  }
+
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   return (
     <Input
       placeholder="Search by name..."
       value={value}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={handleChange}
       className="w-full sm:w-64"
     />
   );

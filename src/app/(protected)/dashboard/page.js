@@ -45,45 +45,43 @@ export default async function Dashboard() {
   );
 
   return (
-    <div className="bg-background">
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <div className="flex flex-wrap items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-          </div>
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+      <div className="flex flex-wrap items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
+          <p className="text-muted-foreground">{user.email}</p>
         </div>
+      </div>
 
-        <StatCards />
+      <StatCards />
 
-        {user.role === "admin" && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" />
-                Admin
-              </CardTitle>
-              <CardDescription>Manage users, roles, and bans.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link href="/users">Go to user management</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+      {user.role === "admin" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" />
+              Admin
+            </CardTitle>
+            <CardDescription>Manage users, roles, and bans.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/users">Go to user management</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-        <SecurityChecklist
-          email={user.email}
-          emailEnabled={emailEnabled}
-          emailVerified={user.emailVerified}
-          twoFactorEnabled={user.twoFactorEnabled}
-          hasPassword={hasPassword}
-          passkeyCount={passkeys.length}
-          socialAccounts={socialAccounts}
-          hasSocialProviders={activeProviders.length > 0}
-        />
-      </main>
+      <SecurityChecklist
+        email={user.email}
+        emailEnabled={emailEnabled}
+        emailVerified={user.emailVerified}
+        twoFactorEnabled={user.twoFactorEnabled}
+        hasPassword={hasPassword}
+        passkeyCount={passkeys.length}
+        socialAccounts={socialAccounts}
+        hasSocialProviders={activeProviders.length > 0}
+      />
     </div>
   );
 }
