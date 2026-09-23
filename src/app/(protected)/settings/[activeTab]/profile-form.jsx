@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
-import { removeImageAction } from "@/app/actions/upload";
+import { removeAvatarAction } from "@/app/actions/upload";
 import { FileUpload } from "@/components/file-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -47,10 +47,9 @@ export function ProfileForm({ user, s3Enabled }) {
   }
 
   async function handleRemoveAvatar() {
-    await removeImageAction(values.image);
-    const { error } = await authClient.updateUser({ image: null });
+    const { error } = await removeAvatarAction();
     if (error) {
-      toast.error(error.message ?? "Could not remove avatar.");
+      toast.error(error);
       return;
     }
     setValues((prev) => ({ ...prev, image: "" }));

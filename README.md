@@ -10,7 +10,7 @@ A minimal Next.js boilerplate with authentication, database and a component libr
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+
 - Docker (recommended) or PostgreSQL running locally
 
 ## Setup
@@ -51,7 +51,7 @@ npm run db:push
 6. Generate the Prisma client
 
 ```bash
-npm run prisma:generate
+npm run db:generate
 ```
 
 7. Start the dev server
