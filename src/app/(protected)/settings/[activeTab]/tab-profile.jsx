@@ -1,12 +1,10 @@
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { s3Enabled } from "@/lib/storage/config";
 
 import { ProfileForm } from "./profile-form";
 
 export async function Profile() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   const { id, firstName, lastName, email, image, createdAt } = session.user;
 
   return (

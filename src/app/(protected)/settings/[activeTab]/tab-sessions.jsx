@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import {
   RevokeOtherSessionsButton,
@@ -19,7 +20,7 @@ export async function Sessions() {
   const hdrs = await headers();
 
   const [activeSession, sessions] = await Promise.all([
-    auth.api.getSession({ headers: hdrs }),
+    getSession(),
     auth.api.listSessions({ headers: hdrs }),
   ]);
 

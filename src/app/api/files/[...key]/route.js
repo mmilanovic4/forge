@@ -1,14 +1,12 @@
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
 import { canReadFile } from "@/lib/upload";
 
 const notFound = () => new Response("Not found", { status: 404 });
 
 export async function GET(_, ctx) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session?.user) {
     return new Response("You must be signed in to view this file.", {
       status: 401,
