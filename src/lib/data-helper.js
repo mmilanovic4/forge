@@ -27,12 +27,26 @@ export async function listUsers({ search, limit, offset }) {
       where,
       take: limit,
       skip: offset,
-      // The member row carries the organization role.
-      ...(scope && {
-        include: {
-          members: { where: { organizationId: scope.organization.id } },
-        },
-      }),
+      // Only what the table shows: every other member can read this, so the
+      // row mustn't carry anything about how an account is secured.
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        image: true,
+        role: true,
+        banned: true,
+        createdAt: true,
+        // The member row carries the organization role.
+        ...(scope && {
+          members: {
+            where: { organizationId: scope.organization.id },
+            select: { role: true },
+          },
+        }),
+      },
     }),
     db.user.count({ where }),
   ]);

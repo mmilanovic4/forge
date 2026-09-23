@@ -1,7 +1,11 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
@@ -20,6 +24,7 @@ import {
   resetPasswordEmailTpl,
   verifyEmailTpl,
 } from "./email-templates";
+import { avatarPrefix, FILES_URL_PREFIX } from "./files";
 import { logger } from "./logger";
 import {
   assertNoOrphanedOrganizations,
@@ -175,6 +180,22 @@ export const auth = betterAuth({
         required: false,
       },
     },
+    // Code and link sign-ins create an account for any unknown address, and
+    // with an empty name. Only the register page sends one, so requiring it
+    // keeps signing in from ever creating an account — the same line
+    // `requestSignUp` draws for social sign-in — and a deleted account from
+    // quietly coming back on the next login.
+    validateUserInfo: ({ user, source }) => {
+      const passwordless =
+        source.method === "email-otp" || source.method === "magic-link";
+      if (source.action === "create-user" && passwordless && !user.name?.trim())
+        return {
+          // Reuses better-auth's own code, which /auth-error already explains.
+          error: "signup_disabled",
+          errorDescription:
+            "No account found with this email. Please sign up first.",
+        };
+    },
     deleteUser: {
       enabled: true,
       beforeDelete: organizationsEnabled
@@ -218,19 +239,37 @@ export const auth = betterAuth({
     : undefined,
   socialProviders,
   hooks: {
-    // The admin plugin's removeUser has no beforeDelete of its own, and it
-    // clears the target's sessions before deleting them — so the ownership
-    // check runs here, ahead of the endpoint. Only for admins: anyone else is
-    // rejected by the endpoint, and must not learn which organizations the
-    // target owns from this error.
-    before: organizationsEnabled
-      ? createAuthMiddleware(async (ctx) => {
-          if (ctx.path !== "/admin/remove-user" || !ctx.body?.userId) return;
-          const session = await getSessionFromCtx(ctx);
-          if (session?.user.role !== "admin") return;
-          await assertNoOrphanedOrganizations(ctx.body.userId);
-        })
-      : undefined,
+    before: createAuthMiddleware(async (ctx) => {
+      // `image` is shown to other users and decides which stored avatar is
+      // theirs, so it may only point at one of the caller's own uploads — not
+      // at someone else's file, nor at an outside URL that would learn every
+      // viewer's IP.
+      if (ctx.path === "/update-user" && ctx.body?.image != null) {
+        const session = await getSessionFromCtx(ctx);
+        const own = `${FILES_URL_PREFIX}${avatarPrefix(session?.user.id)}/`;
+        if (
+          typeof ctx.body.image !== "string" ||
+          !ctx.body.image.startsWith(own)
+        ) {
+          throw new APIError("BAD_REQUEST", { message: "Invalid avatar." });
+        }
+      }
+
+      // The admin plugin's removeUser has no beforeDelete of its own, and it
+      // clears the target's sessions before deleting them — so the ownership
+      // check runs here, ahead of the endpoint. Only for admins: anyone else
+      // is rejected by the endpoint, and must not learn which organizations
+      // the target owns from this error.
+      if (
+        organizationsEnabled &&
+        ctx.path === "/admin/remove-user" &&
+        ctx.body?.userId
+      ) {
+        const session = await getSessionFromCtx(ctx);
+        if (session?.user.role !== "admin") return;
+        await assertNoOrphanedOrganizations(ctx.body.userId);
+      }
+    }),
   },
   plugins: [
     admin({

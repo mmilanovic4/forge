@@ -23,11 +23,9 @@ export async function Sessions() {
     auth.api.listSessions({ headers: hdrs }),
   ]);
 
-  const currentToken = activeSession?.session?.token;
+  const currentId = activeSession?.session?.id;
   const list = sessions ?? [];
-  const hasOtherSessions = list.some(
-    (session) => session.token !== currentToken,
-  );
+  const hasOtherSessions = list.some((session) => session.id !== currentId);
 
   return (
     <Card className="w-full">
@@ -40,7 +38,7 @@ export async function Sessions() {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-3">
           {list.map((session) => {
-            const isCurrent = session.token === currentToken;
+            const isCurrent = session.id === currentId;
 
             return (
               <div
@@ -64,7 +62,7 @@ export async function Sessions() {
                     Current
                   </Badge>
                 ) : (
-                  <RevokeSessionButton token={session.token} />
+                  <RevokeSessionButton sessionId={session.id} />
                 )}
               </div>
             );

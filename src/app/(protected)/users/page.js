@@ -77,7 +77,7 @@ async function UsersTable({ query, page, limit, search }) {
   ]);
 
   const isAdmin = session?.user?.role === "admin";
-  const columns = 6 + (organizationsEnabled ? 1 : 0) + (isAdmin ? 1 : 0);
+  const columns = 5 + (organizationsEnabled ? 1 : 0) + (isAdmin ? 1 : 0);
   const currentUserId = session?.user?.id;
 
   const users = usersData?.users ?? [];
@@ -98,7 +98,6 @@ async function UsersTable({ query, page, limit, search }) {
             {organizationsEnabled && <TableHead>Org role</TableHead>}
             <TableHead>{organizationsEnabled ? "App role" : "Role"}</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>2FA</TableHead>
             <TableHead>Joined</TableHead>
             {isAdmin && <TableHead />}
           </TableRow>
@@ -159,13 +158,6 @@ async function UsersTable({ query, page, limit, search }) {
                   <TableCell>
                     <Badge variant={user.banned ? "destructive" : "outline"}>
                       {user.banned ? "Banned" : "Active"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={user.twoFactorEnabled ? "default" : "outline"}
-                    >
-                      {user.twoFactorEnabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">

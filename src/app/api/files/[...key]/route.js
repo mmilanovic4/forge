@@ -3,6 +3,9 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { storage } from "@/lib/storage";
+import { canReadFile } from "@/lib/upload";
+
+const notFound = () => new Response("Not found", { status: 404 });
 
 export async function GET(_, ctx) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -15,12 +18,22 @@ export async function GET(_, ctx) {
   const { key } = await ctx.params;
   const path = key.join("/");
 
+  // 404 rather than 403, so a key outside the caller's reach can't be told
+  // apart from one that doesn't exist.
+  if (!(await canReadFile(session.user.id, path))) {
+    return notFound();
+  }
+
   try {
     const { body, contentType, size } = await storage.get(path);
 
     const respHeaders = {
       "Content-Type": contentType || "application/octet-stream",
       "Cache-Control": "private, max-age=31536000, immutable",
+      // Served from the app's own origin, so never let a browser second-guess
+      // the type or run anything the file contains.
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
     };
     if (size) respHeaders["Content-Length"] = String(size);
 
@@ -30,6 +43,6 @@ export async function GET(_, ctx) {
     if (err.name !== "NoSuchKey") {
       logger.error("Failed to read file from storage", { err, key: path });
     }
-    return new Response("Not found", { status: 404 });
+    return notFound();
   }
 }

@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { avatarPrefix, FILES_URL_PREFIX } from "@/lib/files";
 import { logger } from "@/lib/logger";
 import { storage } from "@/lib/storage";
 import { IMAGE_TYPES, uploadFile } from "@/lib/upload";
@@ -15,35 +16,45 @@ export async function uploadImageAction(_, formData) {
 
   try {
     const { key } = await uploadFile(formData.get("file"), {
-      prefix: "avatars",
+      prefix: avatarPrefix(session.user.id),
       allowedTypes: IMAGE_TYPES,
       maxSize: 5 * 1024 * 1024,
     });
-    return { key, url: `/api/files/${key}` };
+    return { key, url: `${FILES_URL_PREFIX}${key}` };
   } catch (err) {
     return { error: err.message ?? "Upload failed." };
   }
 }
 
-export async function removeImageAction(url) {
-  const session = await auth.api.getSession({ headers: await headers() });
+// Takes no argument on purpose: the only avatar a user may remove is their
+// own current one, read from the session rather than trusted from the client.
+export async function removeAvatarAction() {
+  const hdrs = await headers();
+  const session = await auth.api.getSession({ headers: hdrs });
   if (!session?.user) {
-    return { error: "You must be signed in to remove a file." };
+    return { error: "You must be signed in to remove your avatar." };
   }
 
-  const prefix = "/api/files/";
-  if (typeof url === "string" && url.startsWith(prefix)) {
-    const key = url.slice(prefix.length);
+  const { id: userId, image } = session.user;
+
+  try {
+    await auth.api.updateUser({ body: { image: null }, headers: hdrs });
+  } catch (err) {
+    return { error: err.message ?? "Could not remove avatar." };
+  }
+
+  const key = image?.startsWith(FILES_URL_PREFIX)
+    ? image.slice(FILES_URL_PREFIX.length)
+    : null;
+
+  if (key?.startsWith(`${avatarPrefix(userId)}/`)) {
     try {
       await storage.remove(key);
     } catch (err) {
       // Not an error for the caller, but it leaves an orphaned object behind.
-      logger.warn("Failed to remove file", {
-        err,
-        key,
-        userId: session.user.id,
-      });
+      logger.warn("Failed to remove file", { err, key, userId });
     }
   }
+
   return { ok: true };
 }

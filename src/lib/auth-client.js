@@ -29,9 +29,9 @@ if (organizationsEnabled) {
 export const authClient = createAuthClient({
   plugins: [
     adminClient(),
-    twoFactorClient({
-      twoFactorPage: "/verify-2fa",
-    }),
+    // No twoFactorPage: the plugin would send the browser there with a bare
+    // URL, dropping `?redirect=`. The login page navigates itself instead.
+    twoFactorClient(),
     passkeyClient(),
     ...conditionalClientPlugins,
   ],

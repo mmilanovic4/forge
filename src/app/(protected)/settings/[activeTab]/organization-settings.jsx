@@ -297,7 +297,12 @@ async function copyInvitationLink(id) {
   }
 }
 
-export function InvitationsCard({ invitations, currentRole, emailEnabled }) {
+export function InvitationsCard({
+  organizationId,
+  invitations,
+  currentRole,
+  emailEnabled,
+}) {
   const { pending, run } = useAction();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
@@ -309,7 +314,11 @@ export function InvitationsCard({ invitations, currentRole, emailEnabled }) {
     const ok = await run(
       "invite",
       async () => {
+        // Explicit, like every other call here: without it better-auth falls
+        // back to the session's active organization, which another tab may
+        // have switched since this page rendered.
         const result = await authClient.organization.inviteMember({
+          organizationId,
           email: email.trim(),
           role,
         });

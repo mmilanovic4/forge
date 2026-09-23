@@ -35,6 +35,15 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
+  // A 2FA challenge interrupts the sign-in; carry the destination through it.
+  function continueSignIn(data) {
+    router.push(
+      data?.twoFactorRedirect
+        ? `/verify-2fa?${new URLSearchParams({ redirect: redirectTo })}`
+        : redirectTo,
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -71,8 +80,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
         return;
       }
 
-      if (data?.twoFactorRedirect) return;
-      router.push(redirectTo);
+      continueSignIn(data);
       return;
     }
 
@@ -81,6 +89,9 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
       const { error } = await authClient.signIn.magicLink({
         email: values.email,
         callbackURL: redirectTo,
+        // Otherwise a failed link — e.g. for an address with no account —
+        // lands on callbackURL, which bounces a visitor to login unexplained.
+        errorCallbackURL: "/auth-error",
       });
 
       if (error) {
@@ -97,7 +108,23 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
     const { data, error } = await authClient.signIn.email({ ...values });
 
     if (error) {
+      // Only reported once the password has checked out, so this is the
+      // account's owner — likely with an expired or lost link. Send a fresh one
+      // rather than leave them stuck.
       if (error.code === "EMAIL_NOT_VERIFIED") {
+        const { error: sendError } = await authClient.sendVerificationEmail({
+          email: values.email,
+          callbackURL: redirectTo,
+        });
+        if (!sendError) {
+          const params = new URLSearchParams({
+            email: values.email,
+            redirect: redirectTo,
+            resent: "1",
+          });
+          router.push(`/verify-email?${params}`);
+          return;
+        }
         toast.error("Please verify your email before signing in.");
       } else if (error.code === "USER_BANNED") {
         toast.error("Your account has been banned. Please contact support.");
@@ -108,8 +135,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
       return;
     }
 
-    if (data?.twoFactorRedirect) return;
-    router.push(redirectTo);
+    continueSignIn(data);
   }
 
   const passwordless = isPasswordless(authMethod);
@@ -191,7 +217,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
           <Button type="submit" className="w-full" disabled={buttonDisabled}>
             {buttonLabel()}
           </Button>
-          <PasskeySignIn className="w-full" />
+          <PasskeySignIn className="w-full" callbackURL={redirectTo} />
           <SocialSignIn
             providers={providers}
             requestSignUp={false}

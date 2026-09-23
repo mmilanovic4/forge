@@ -4,15 +4,9 @@ ${content}
 </table>
 `;
 
-// GitHub sign-ups have no firstName, so the sentence has to read correctly
-// with and without the greeting — hence the lowercase `sentence`.
-const opening = (firstName, sentence) =>
-  firstName
-    ? `Hi ${firstName}, ${sentence}`
-    : sentence.charAt(0).toUpperCase() + sentence.slice(1);
-
-// For values another user controls — an organization name lands in a stranger's
-// inbox, so it must not be able to inject markup.
+// For every value a user controls. Even your own name isn't safe: anyone can
+// sign up with someone else's address, and the verification email then carries
+// their markup to that stranger's inbox.
 const escapeHtml = (value) =>
   String(value).replace(
     /[&<>"']/g,
@@ -22,8 +16,16 @@ const escapeHtml = (value) =>
       ],
   );
 
+// GitHub sign-ups have no firstName, so the sentence has to read correctly
+// with and without the greeting — hence the lowercase `sentence`.
+const opening = (firstName, sentence) =>
+  firstName
+    ? `Hi ${escapeHtml(firstName)}, ${sentence}`
+    : sentence.charAt(0).toUpperCase() + sentence.slice(1);
+
+// The URLs are ours, but may carry a user-supplied callbackURL.
 const button = (url, label) =>
-  `<a href="${url}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">${label}</a>`;
+  `<a href="${escapeHtml(url)}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">${label}</a>`;
 
 export const loginCodeEmailTpl = ({ otp }) =>
   wrapper(`
@@ -31,7 +33,7 @@ export const loginCodeEmailTpl = ({ otp }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Your login code</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Enter the code below to sign in. This code expires in 10 minutes.</p>
+    <p style="font-size:14px;margin:0;color:#555;">Enter the code below to sign in. This code expires in 5 minutes.</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     <p style="font-size:32px;font-weight:700;margin:0;letter-spacing:8px;">${otp}</p>
@@ -46,7 +48,7 @@ export const magicLinkEmailTpl = ({ url }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Your login link</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Click the button below to sign in. This link expires in 1 hour.</p>
+    <p style="font-size:14px;margin:0;color:#555;">Click the button below to sign in. This link expires in 5 minutes.</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     ${button(url, "Sign in")}

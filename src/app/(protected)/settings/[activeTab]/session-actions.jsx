@@ -5,20 +5,21 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
+import { revokeSessionAction } from "@/app/actions/sessions";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-export function RevokeSessionButton({ token }) {
+export function RevokeSessionButton({ sessionId }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleRevoke() {
     setLoading(true);
 
-    const { error } = await authClient.revokeSession({ token });
+    const { error } = await revokeSessionAction(sessionId);
 
     if (error) {
-      toast.error(error.message ?? "Something went wrong. Please try again.");
+      toast.error(error);
       setLoading(false);
       return;
     }

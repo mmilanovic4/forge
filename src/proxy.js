@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { cookiePrefix } from "@/lib/app-config";
 import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { safeRedirect } from "@/lib/utils";
 
 // Auth cookies are `<prefix>.<purpose>`, gaining a `__Secure-` prefix on HTTPS.
 const isAuthCookie = (name) =>
@@ -32,8 +33,11 @@ export default async function proxy(request) {
 
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
+  // Honour `?redirect=` — an invitation link sends signed-in visitors through
+  // here too, and they should land back on it.
   if (isAuthRoute && session) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const target = safeRedirect(request.nextUrl.searchParams.get("redirect"));
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   const response = NextResponse.next();
