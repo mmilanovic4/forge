@@ -15,8 +15,11 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { getInitials } from "@/lib/user";
 
+// `onboarding` hides the links to protected pages, which would only bounce a
+// user without an organization back to onboarding.
 export function UserMenu({
   user: { name, firstName, lastName, email, image },
+  onboarding = false,
 }) {
   const router = useRouter();
 
@@ -40,20 +43,24 @@ export function UserMenu({
           <p className="text-sm font-medium">{name}</p>
           <p className="text-muted-foreground text-xs">{email}</p>
         </div>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push("/settings/profile")}
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push("/users")}
-        >
-          <Users className="mr-2 h-4 w-4" />
-          Users
-        </DropdownMenuItem>
+        {!onboarding && (
+          <>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => router.push("/settings/profile")}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => router.push("/users")}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Users
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
