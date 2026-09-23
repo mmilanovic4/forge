@@ -67,6 +67,7 @@ export async function OrganizationTab() {
       />
       {canManage && (
         <InvitationsCard
+          organizationId={id}
           invitations={invitations}
           currentRole={member.role}
           emailEnabled={emailEnabled}

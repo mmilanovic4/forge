@@ -180,6 +180,22 @@ export const auth = betterAuth({
         required: false,
       },
     },
+    // Code and link sign-ins create an account for any unknown address, and
+    // with an empty name. Only the register page sends one, so requiring it
+    // keeps signing in from ever creating an account — the same line
+    // `requestSignUp` draws for social sign-in — and a deleted account from
+    // quietly coming back on the next login.
+    validateUserInfo: ({ user, source }) => {
+      const passwordless =
+        source.method === "email-otp" || source.method === "magic-link";
+      if (source.action === "create-user" && passwordless && !user.name?.trim())
+        return {
+          // Reuses better-auth's own code, which /auth-error already explains.
+          error: "signup_disabled",
+          errorDescription:
+            "No account found with this email. Please sign up first.",
+        };
+    },
     deleteUser: {
       enabled: true,
       beforeDelete: organizationsEnabled

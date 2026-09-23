@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
+const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
+
 export function RegisterClient({ email, providers, redirectTo }) {
   const router = useRouter();
   const { values, handleChange } = useForm({
@@ -31,26 +33,122 @@ export function RegisterClient({ email, providers, redirectTo }) {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+
+  const firstName = values.firstName.trim();
+  const lastName = values.lastName.trim();
+  const name = `${firstName} ${lastName}`;
+  const passwordless = authMethod === "otp" || authMethod === "magic-link";
+
+  // Code and link sign-ins create the account on first use; sending a name
+  // is what marks this as a sign-up rather than a login (see
+  // validateUserInfo in lib/auth.js).
+  async function signUp() {
+    if (authMethod === "otp") {
+      if (!otpSent) {
+        const { error } = await authClient.emailOtp.sendVerificationOtp({
+          email: values.email,
+          type: "sign-in",
+        });
+        if (!error) setOtpSent(true);
+        return { error };
+      }
+
+      const { error } = await authClient.signIn.emailOtp({
+        email: values.email,
+        otp: values.otp,
+        name,
+        firstName,
+        lastName,
+      });
+      return { error, next: redirectTo };
+    }
+
+    if (authMethod === "magic-link") {
+      const { error } = await authClient.signIn.magicLink({
+        email: values.email,
+        name,
+        callbackURL: redirectTo,
+        errorCallbackURL: "/auth-error",
+      });
+      if (!error) setLinkSent(true);
+      return { error };
+    }
+
+    const { data, error } = await authClient.signUp.email({
+      name,
+      firstName,
+      lastName,
+      email: values.email,
+      password: values.password,
+      callbackURL: redirectTo,
+    });
+    // No token means the account waits on email verification; the link in
+    // that email signs the user in and continues to `redirectTo`.
+    const params = new URLSearchParams({
+      email: values.email,
+      redirect: redirectTo,
+    });
+    return {
+      error,
+      next: data?.token ? redirectTo : `/verify-email?${params}`,
+    };
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await authClient.signUp.email({
-      name: `${values.firstName} ${values.lastName}`,
-      ...values,
-      callbackURL: redirectTo,
-    });
+    const { error, next } = await signUp();
 
     if (error) {
       toast.error(error.message ?? "Something went wrong. Please try again.");
+    }
+    if (error || !next) {
       setLoading(false);
       return;
     }
 
-    // No token means the account waits on email verification; the link in
-    // that email signs the user in and continues to `redirectTo`.
-    router.push(data?.token ? redirectTo : "/verify-email");
+    router.push(next);
+  }
+
+  const buttonDisabled =
+    loading ||
+    !firstName ||
+    !lastName ||
+    !values.email ||
+    (!passwordless && !values.password) ||
+    (authMethod === "otp" && otpSent && !values.otp);
+
+  const buttonLabel = () => {
+    if (loading) return "Loading...";
+    if (authMethod === "otp" && !otpSent) return "Send code";
+    if (authMethod === "magic-link") return "Send sign-up link";
+    return "Create account";
+  };
+
+  if (linkSent) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>
+            We sent a sign-up link to <strong>{values.email}</strong>. Open it
+            to finish creating your account.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setLinkSent(false)}
+          >
+            Use a different email
+          </Button>
+        </CardFooter>
+      </Card>
+    );
   }
 
   return (
@@ -94,30 +192,39 @@ export function RegisterClient({ email, providers, redirectTo }) {
               value={values.email}
               onChange={handleChange}
               required
+              disabled={otpSent}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              id="password"
-              name="password"
-              value={values.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={
-              loading ||
-              !values.firstName ||
-              !values.lastName ||
-              !values.email ||
-              !values.password
-            }
-          >
-            {loading ? "Loading..." : "Create account"}
+          {otpSent && (
+            <div className="space-y-2">
+              <Label htmlFor="otp">Code</Label>
+              <Input
+                autoFocus
+                id="otp"
+                name="otp"
+                type="text"
+                inputMode="numeric"
+                placeholder="123456"
+                value={values.otp ?? ""}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
+          {!passwordless && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <PasswordInput
+                id="password"
+                name="password"
+                value={values.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
+          <Button type="submit" className="w-full" disabled={buttonDisabled}>
+            {buttonLabel()}
           </Button>
           <SocialSignIn
             providers={providers}
