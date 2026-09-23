@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function VerifyTwoFactorClient() {
+export function VerifyTwoFactorClient({ redirectTo }) {
   const router = useRouter();
   const { values, setValues } = useForm({ code: "" });
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ export function VerifyTwoFactorClient() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(redirectTo);
   }
 
   function handleCodeChange(e) {

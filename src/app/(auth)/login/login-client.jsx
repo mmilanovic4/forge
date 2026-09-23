@@ -35,6 +35,15 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
+  // A 2FA challenge interrupts the sign-in; carry the destination through it.
+  function continueSignIn(data) {
+    router.push(
+      data?.twoFactorRedirect
+        ? `/verify-2fa?${new URLSearchParams({ redirect: redirectTo })}`
+        : redirectTo,
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -71,8 +80,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
         return;
       }
 
-      if (data?.twoFactorRedirect) return;
-      router.push(redirectTo);
+      continueSignIn(data);
       return;
     }
 
@@ -127,8 +135,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
       return;
     }
 
-    if (data?.twoFactorRedirect) return;
-    router.push(redirectTo);
+    continueSignIn(data);
   }
 
   const passwordless = isPasswordless(authMethod);
@@ -210,7 +217,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
           <Button type="submit" className="w-full" disabled={buttonDisabled}>
             {buttonLabel()}
           </Button>
-          <PasskeySignIn className="w-full" />
+          <PasskeySignIn className="w-full" callbackURL={redirectTo} />
           <SocialSignIn
             providers={providers}
             requestSignUp={false}
