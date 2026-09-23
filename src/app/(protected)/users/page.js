@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { listAllUsers } from "@/lib/data-helper";
+import { organizationsEnabled } from "@/lib/app-config";
+import { listUsers } from "@/lib/data-helper";
 import { getSession } from "@/lib/session";
 import { getInitials } from "@/lib/user";
 
@@ -72,10 +73,11 @@ function Highlight({ text, query }) {
 async function UsersTable({ query, page, limit, search }) {
   const [session, usersData] = await Promise.all([
     getSession(),
-    listAllUsers({ search, limit, offset: (page - 1) * limit }),
+    listUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
 
   const isAdmin = session?.user?.role === "admin";
+  const columns = 6 + (organizationsEnabled ? 1 : 0) + (isAdmin ? 1 : 0);
   const currentUserId = session?.user?.id;
 
   const users = usersData?.users ?? [];
@@ -93,7 +95,8 @@ async function UsersTable({ query, page, limit, search }) {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
+            {organizationsEnabled && <TableHead>Org role</TableHead>}
+            <TableHead>{organizationsEnabled ? "App role" : "Role"}</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>2FA</TableHead>
             <TableHead>Joined</TableHead>
@@ -104,7 +107,7 @@ async function UsersTable({ query, page, limit, search }) {
           {users.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={isAdmin ? 7 : 6}
+                colSpan={columns}
                 className="text-muted-foreground py-8 text-center"
               >
                 No users found.
@@ -133,6 +136,19 @@ async function UsersTable({ query, page, limit, search }) {
                   <TableCell className="text-muted-foreground">
                     {user.email}
                   </TableCell>
+                  {organizationsEnabled && (
+                    <TableCell>
+                      <Badge
+                        variant={
+                          user.membership?.role === "owner"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {user.membership?.role}
+                      </Badge>
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Badge
                       variant={user.role === "admin" ? "default" : "secondary"}

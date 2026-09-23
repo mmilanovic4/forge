@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import {
+  Building2,
   MonitorSmartphone,
   ShieldCheck,
   TriangleAlert,
@@ -9,8 +10,10 @@ import {
 } from "lucide-react";
 
 import { LinkTabs } from "@/components/ui/link-tabs";
+import { organizationsEnabled } from "@/lib/app-config";
 
 import { DangerZone } from "./tab-danger-zone";
+import { OrganizationTab } from "./tab-organization";
 import { Profile } from "./tab-profile";
 import { Security } from "./tab-security";
 import { Sessions } from "./tab-sessions";
@@ -28,6 +31,16 @@ const TABS = [
     label: "Security",
     icon: ShieldCheck,
   },
+  ...(organizationsEnabled
+    ? [
+        {
+          value: "organization",
+          href: "/settings/organization",
+          label: "Organization",
+          icon: Building2,
+        },
+      ]
+    : []),
   {
     value: "sessions",
     href: "/settings/sessions",
@@ -48,6 +61,8 @@ function TabContent({ activeTab }) {
       return <Profile />;
     case "security":
       return <Security />;
+    case "organization":
+      return <OrganizationTab />;
     case "sessions":
       return <Sessions />;
     case "danger":

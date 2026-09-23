@@ -5,7 +5,11 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 
-export function SocialSignIn({ providers, requestSignUp = false }) {
+export function SocialSignIn({
+  providers,
+  requestSignUp = false,
+  callbackURL = "/dashboard",
+}) {
   if (!providers.length) {
     return null;
   }
@@ -28,7 +32,7 @@ export function SocialSignIn({ providers, requestSignUp = false }) {
               onClick={() =>
                 authClient.signIn.social({
                   provider: id,
-                  callbackURL: "/dashboard",
+                  callbackURL,
                   requestSignUp,
                 })
               }

@@ -76,30 +76,31 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 
 ## Environment Variables
 
-| Variable                  | Required | Description                                        |
-| ------------------------- | :------: | -------------------------------------------------- |
-| `DATABASE_URL`            |    ✅    | PostgreSQL connection string                       |
-| `BETTER_AUTH_SECRET`      |    ✅    | Random secret string (min 32 chars)                |
-| `BETTER_AUTH_URL`         |    ✅    | Base URL of the app (e.g. `http://localhost:3000`) |
-| `SMTP_HOST`               |          | SMTP server host                                   |
-| `SMTP_PORT`               |          | SMTP server port                                   |
-| `SMTP_USER`               |          | SMTP username                                      |
-| `SMTP_PASS`               |          | SMTP password                                      |
-| `SMTP_FROM`               |          | From email address                                 |
-| `NEXT_PUBLIC_AUTH_METHOD` |          | Login method [`otp`, `magic-link`]                 |
-| `DISCORD_CLIENT_ID`       |          | Discord OAuth app client ID                        |
-| `DISCORD_CLIENT_SECRET`   |          | Discord OAuth app client secret                    |
-| `GITHUB_CLIENT_ID`        |          | GitHub OAuth app client ID                         |
-| `GITHUB_CLIENT_SECRET`    |          | GitHub OAuth app client secret                     |
-| `GOOGLE_CLIENT_ID`        |          | Google OAuth app client ID                         |
-| `GOOGLE_CLIENT_SECRET`    |          | Google OAuth app client secret                     |
-| `S3_BUCKET`               |          | Bucket name for file uploads                       |
-| `S3_REGION`               |          | Bucket region                                      |
-| `S3_ACCESS_KEY_ID`        |          | S3 access key ID                                   |
-| `S3_SECRET_ACCESS_KEY`    |          | S3 secret access key                               |
-| `S3_ENDPOINT`             |          | Custom endpoint for S3-compatible services         |
-| `LOG_LEVEL`               |          | Log level [`debug`, `info`, `warn`, `error`]       |
-| `LOG_FORMAT`              |          | Log format [`json`, `pretty`]                      |
+| Variable                    | Required | Description                                        |
+| --------------------------- | :------: | -------------------------------------------------- |
+| `DATABASE_URL`              |    ✅    | PostgreSQL connection string                       |
+| `BETTER_AUTH_SECRET`        |    ✅    | Random secret string (min 32 chars)                |
+| `BETTER_AUTH_URL`           |    ✅    | Base URL of the app (e.g. `http://localhost:3000`) |
+| `SMTP_HOST`                 |          | SMTP server host                                   |
+| `SMTP_PORT`                 |          | SMTP server port                                   |
+| `SMTP_USER`                 |          | SMTP username                                      |
+| `SMTP_PASS`                 |          | SMTP password                                      |
+| `SMTP_FROM`                 |          | From email address                                 |
+| `NEXT_PUBLIC_AUTH_METHOD`   |          | Login method [`otp`, `magic-link`]                 |
+| `NEXT_PUBLIC_ORGANIZATIONS` |          | Set to `true` to enable organizations              |
+| `DISCORD_CLIENT_ID`         |          | Discord OAuth app client ID                        |
+| `DISCORD_CLIENT_SECRET`     |          | Discord OAuth app client secret                    |
+| `GITHUB_CLIENT_ID`          |          | GitHub OAuth app client ID                         |
+| `GITHUB_CLIENT_SECRET`      |          | GitHub OAuth app client secret                     |
+| `GOOGLE_CLIENT_ID`          |          | Google OAuth app client ID                         |
+| `GOOGLE_CLIENT_SECRET`      |          | Google OAuth app client secret                     |
+| `S3_BUCKET`                 |          | Bucket name for file uploads                       |
+| `S3_REGION`                 |          | Bucket region                                      |
+| `S3_ACCESS_KEY_ID`          |          | S3 access key ID                                   |
+| `S3_SECRET_ACCESS_KEY`      |          | S3 secret access key                               |
+| `S3_ENDPOINT`               |          | Custom endpoint for S3-compatible services         |
+| `LOG_LEVEL`                 |          | Log level [`debug`, `info`, `warn`, `error`]       |
+| `LOG_FORMAT`                |          | Log format [`json`, `pretty`]                      |
 
 ## Auth Method
 
@@ -128,6 +129,16 @@ A few things to know:
 
 - WebAuthn requires a **secure context**. In production the app must be served over HTTPS; `localhost` is exempt for local development.
 - Passkey sign-in is a passwordless (non-credential) path, so it is **not** gated by the two-factor challenge by default — a passkey login completes in one step.
+
+## Organizations
+
+Setting `NEXT_PUBLIC_ORGANIZATIONS=true` turns on Better Auth's organization plugin and makes membership **mandatory**: every signed-in user works inside an active organization, and one without any is sent to `/onboarding` before reaching a protected page.
+
+- **Joining** — onboarding lists the user's pending invitations; otherwise they create an organization (a name is suggested) and become its owner. This happens after sign-in rather than at sign-up, so it works the same for every sign-in method, and existing accounts are onboarded on their next visit.
+- **Invitations** — owners and admins invite people from **Settings → Organization**. The email links to `/accept-invitation/<id>`, which walks invitees without an account through sign-up with the address prefilled and brings them back to accept. Without SMTP, the invitation link is copied to the clipboard to share by hand.
+- **Scope** — `/users` and the dashboard stats only cover the active organization. Users switch between their organizations from the header.
+- **Roles** — organization roles (`owner`, `admin`, `member`) are separate from the global roles below.
+- **Deleting an account** — organizations the user is alone in are deleted with it. If they are the last owner of an organization that still has members, deletion is blocked until ownership moves to someone else.
 
 ## User Roles
 
