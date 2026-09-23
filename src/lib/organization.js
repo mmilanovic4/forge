@@ -30,14 +30,9 @@ export async function defaultOrganizationId(userId) {
   return ids.includes(last) ? last : (ids[0] ?? null);
 }
 
-/**
- * Runs before any user row is deleted — self-service deletion and the admin
- * plugin's removeUser alike — so no organization is left without an owner.
- * Organizations the user is alone in go with them; one that still has other
- * members but no other owner blocks the deletion until ownership moves.
- */
-export async function releaseOwnedOrganizations(userId) {
-  const owned = await db.member.findMany({
+// Organizations the user owns, with everyone else in them.
+const ownedOrganizations = (userId) =>
+  db.member.findMany({
     where: { userId, role: "owner" },
     select: {
       organization: {
@@ -53,7 +48,16 @@ export async function releaseOwnedOrganizations(userId) {
     },
   });
 
-  const blocking = owned.filter(
+/**
+ * Refuses to delete a user who is the last owner of an organization that
+ * still has other members — it would be left with nobody able to manage it.
+ *
+ * Must run before better-auth deletes anything: its deleteUser removes the
+ * user's sessions and accounts (password included) before the user row, so a
+ * check on the user row itself fires too late and strands a login-less user.
+ */
+export async function assertNoOrphanedOrganizations(userId) {
+  const blocking = (await ownedOrganizations(userId)).filter(
     ({ organization: { members } }) =>
       members.length > 0 && !members.some((m) => m.role === "owner"),
   );
@@ -64,8 +68,11 @@ export async function releaseOwnedOrganizations(userId) {
       message: `Transfer ownership of ${names.join(", ")} before deleting this account.`,
     });
   }
+}
 
-  const solo = owned
+// Organizations the user is alone in go with them.
+export async function deleteSoloOrganizations(userId) {
+  const solo = (await ownedOrganizations(userId))
     .filter(({ organization: { members } }) => members.length === 0)
     .map(({ organization }) => organization.id);
 

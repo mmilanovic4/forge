@@ -1,6 +1,7 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
@@ -21,8 +22,9 @@ import {
 } from "./email-templates";
 import { logger } from "./logger";
 import {
+  assertNoOrphanedOrganizations,
   defaultOrganizationId,
-  releaseOwnedOrganizations,
+  deleteSoloOrganizations,
 } from "./organization";
 
 // firstName is optional (GitHub never sends one), so fall back to the first
@@ -136,8 +138,10 @@ export const auth = betterAuth({
         }
       : undefined,
     user: {
+      // Only cleanup here — the ownership check has to run earlier, see
+      // assertNoOrphanedOrganizations.
       delete: organizationsEnabled
-        ? { before: (user) => releaseOwnedOrganizations(user.id) }
+        ? { before: (user) => deleteSoloOrganizations(user.id) }
         : undefined,
       update: {
         // `name` is derived, never editable in the UI, so keep it in sync
@@ -173,6 +177,9 @@ export const auth = betterAuth({
     },
     deleteUser: {
       enabled: true,
+      beforeDelete: organizationsEnabled
+        ? (user) => assertNoOrphanedOrganizations(user.id)
+        : undefined,
     },
   },
   emailAndPassword: {
@@ -210,6 +217,21 @@ export const auth = betterAuth({
       }
     : undefined,
   socialProviders,
+  hooks: {
+    // The admin plugin's removeUser has no beforeDelete of its own, and it
+    // clears the target's sessions before deleting them — so the ownership
+    // check runs here, ahead of the endpoint. Only for admins: anyone else is
+    // rejected by the endpoint, and must not learn which organizations the
+    // target owns from this error.
+    before: organizationsEnabled
+      ? createAuthMiddleware(async (ctx) => {
+          if (ctx.path !== "/admin/remove-user" || !ctx.body?.userId) return;
+          const session = await getSessionFromCtx(ctx);
+          if (session?.user.role !== "admin") return;
+          await assertNoOrphanedOrganizations(ctx.body.userId);
+        })
+      : undefined,
+  },
   plugins: [
     admin({
       defaultRole: "user",
