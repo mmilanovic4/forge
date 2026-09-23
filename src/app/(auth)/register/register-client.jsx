@@ -22,12 +22,12 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function RegisterClient({ providers }) {
+export function RegisterClient({ email, providers, redirectTo }) {
   const router = useRouter();
   const { values, handleChange } = useForm({
     firstName: "",
     lastName: "",
-    email: "",
+    email,
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -36,10 +36,10 @@ export function RegisterClient({ providers }) {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await authClient.signUp.email({
+    const { data, error } = await authClient.signUp.email({
       name: `${values.firstName} ${values.lastName}`,
       ...values,
-      callbackURL: "/dashboard",
+      callbackURL: redirectTo,
     });
 
     if (error) {
@@ -48,7 +48,9 @@ export function RegisterClient({ providers }) {
       return;
     }
 
-    router.push("/verify-email");
+    // No token means the account waits on email verification; the link in
+    // that email signs the user in and continues to `redirectTo`.
+    router.push(data?.token ? redirectTo : "/verify-email");
   }
 
   return (
@@ -117,13 +119,24 @@ export function RegisterClient({ providers }) {
           >
             {loading ? "Loading..." : "Create account"}
           </Button>
-          <SocialSignIn providers={providers} requestSignUp />
+          <SocialSignIn
+            providers={providers}
+            requestSignUp
+            callbackURL={redirectTo}
+          />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">
             Already have an account?
           </p>
-          <Link href="/login" className="text-primary text-sm hover:underline">
+          <Link
+            href={
+              redirectTo === "/dashboard"
+                ? "/login"
+                : `/login?redirect=${encodeURIComponent(redirectTo)}`
+            }
+            className="text-primary text-sm hover:underline"
+          >
             Sign in
           </Link>
         </CardFooter>

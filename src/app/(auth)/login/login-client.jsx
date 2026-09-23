@@ -29,9 +29,9 @@ const isPasswordless = (authMethod) => {
   return authMethod === "otp" || authMethod === "magic-link";
 };
 
-export function LoginClient({ emailEnabled, providers }) {
+export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
   const router = useRouter();
-  const { values, handleChange } = useForm({ email: "", password: "" });
+  const { values, handleChange } = useForm({ email, password: "" });
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
@@ -72,7 +72,7 @@ export function LoginClient({ emailEnabled, providers }) {
       }
 
       if (data?.twoFactorRedirect) return;
-      router.push("/dashboard");
+      router.push(redirectTo);
       return;
     }
 
@@ -80,7 +80,7 @@ export function LoginClient({ emailEnabled, providers }) {
     if (authMethod === "magic-link") {
       const { error } = await authClient.signIn.magicLink({
         email: values.email,
-        callbackURL: "/dashboard",
+        callbackURL: redirectTo,
       });
 
       if (error) {
@@ -109,7 +109,7 @@ export function LoginClient({ emailEnabled, providers }) {
     }
 
     if (data?.twoFactorRedirect) return;
-    router.push("/dashboard");
+    router.push(redirectTo);
   }
 
   const passwordless = isPasswordless(authMethod);
@@ -192,14 +192,22 @@ export function LoginClient({ emailEnabled, providers }) {
             {buttonLabel()}
           </Button>
           <PasskeySignIn className="w-full" />
-          <SocialSignIn providers={providers} requestSignUp={false} />
+          <SocialSignIn
+            providers={providers}
+            requestSignUp={false}
+            callbackURL={redirectTo}
+          />
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-1">
           <p className="text-muted-foreground text-sm">
             {"Don't"} have an account?
           </p>
           <Link
-            href="/register"
+            href={
+              redirectTo === "/dashboard"
+                ? "/register"
+                : `/register?redirect=${encodeURIComponent(redirectTo)}`
+            }
             className="text-primary text-sm hover:underline"
           >
             Sign up

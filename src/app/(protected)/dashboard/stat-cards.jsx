@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
+import { organizationsEnabled } from "@/lib/app-config";
 import { getUserStats } from "@/lib/data-helper";
 
 function StatCard({ icon: Icon, label, value, detail }) {
@@ -35,9 +36,11 @@ export async function StatCards() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <StatCard
         icon={Users}
-        label="Current users"
+        label={organizationsEnabled ? "Members" : "Current users"}
         value={totalUsers}
-        detail="Registered accounts"
+        detail={
+          organizationsEnabled ? "In this organization" : "Registered accounts"
+        }
       />
       <StatCard
         icon={MonitorSmartphone}
@@ -49,7 +52,11 @@ export async function StatCards() {
         icon={UserPlus}
         label="New this week"
         value={newUsers}
-        detail="Signed up in the last 7 days"
+        detail={
+          organizationsEnabled
+            ? "Joined in the last 7 days"
+            : "Signed up in the last 7 days"
+        }
       />
     </div>
   );

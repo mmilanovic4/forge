@@ -5,19 +5,25 @@ import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { magicLink } from "better-auth/plugins/magic-link";
+import { organization } from "better-auth/plugins/organization";
 import { twoFactor } from "better-auth/plugins/two-factor";
 
-import { cookiePrefix } from "./app-config";
+import { appName, cookiePrefix, organizationsEnabled } from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
 import { sendEmail } from "./email";
 import {
+  invitationEmailTpl,
   loginCodeEmailTpl,
   magicLinkEmailTpl,
   resetPasswordEmailTpl,
   verifyEmailTpl,
 } from "./email-templates";
 import { logger } from "./logger";
+import {
+  defaultOrganizationId,
+  releaseOwnedOrganizations,
+} from "./organization";
 
 // firstName is optional (GitHub never sends one), so fall back to the first
 // word of the name the provider did give us before dropping the greeting.
@@ -66,6 +72,33 @@ if (emailEnabled && authMethod === "otp") {
   );
 }
 
+if (organizationsEnabled) {
+  conditionalPlugins.push(
+    organization({
+      // Without SMTP nobody can verify an address, so requiring it would make
+      // invitations impossible to accept.
+      requireEmailVerificationOnInvitation: emailEnabled,
+      // Without SMTP the inviter shares the link from the settings page.
+      sendInvitationEmail: emailEnabled
+        ? async ({ id, email, organization, inviter }) => {
+            await sendEmail({
+              to: email,
+              subject: `Join ${organization.name} on ${appName}`,
+              html: invitationEmailTpl({
+                organizationName: organization.name,
+                inviterName: inviter.user.name,
+                url: new URL(
+                  `/accept-invitation/${id}`,
+                  process.env.BETTER_AUTH_URL,
+                ).toString(),
+              }),
+            });
+          }
+        : undefined,
+    }),
+  );
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
@@ -86,7 +119,26 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
+    session: organizationsEnabled
+      ? {
+          create: {
+            // Sessions start without an active organization; pick one here so
+            // every sign-in method lands in a workspace without a round trip.
+            before: async (session) => ({
+              data: {
+                ...session,
+                activeOrganizationId: await defaultOrganizationId(
+                  session.userId,
+                ),
+              },
+            }),
+          },
+        }
+      : undefined,
     user: {
+      delete: organizationsEnabled
+        ? { before: (user) => releaseOwnedOrganizations(user.id) }
+        : undefined,
       update: {
         // `name` is derived, never editable in the UI, so keep it in sync
         // whenever firstName/lastName move. Every user write in the app goes
