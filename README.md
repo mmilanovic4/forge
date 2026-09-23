@@ -213,7 +213,7 @@ By default the level is `info` in production and `debug` in development, and the
 Forge is growing from a boilerplate into a self-hostable backend platform.
 Planned work, roughly in order:
 
-- **Multi-tenancy** — organization support, with users belonging to multiple organizations
+- ~~**Multi-tenancy** — organization support, with users belonging to multiple organizations~~ (done)
 - **Authorization** — row-level security in PostgreSQL (most likely), covering storage the same way
 - **API layer** — REST access with API keys, for clients outside the app
 

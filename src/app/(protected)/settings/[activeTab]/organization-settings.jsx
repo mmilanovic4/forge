@@ -60,8 +60,10 @@ function useAction() {
     }
 
     if (success) toast.success(success);
+    // Pushing alone would keep the shared (protected) layout — and the
+    // organization switcher in it — as rendered before the change.
     if (redirectTo) router.push(redirectTo);
-    else router.refresh();
+    router.refresh();
     return true;
   }
 
