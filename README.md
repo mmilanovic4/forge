@@ -216,6 +216,7 @@ Planned work, roughly in order:
 - ~~**Multi-tenancy** — organization support, with users belonging to multiple organizations~~ (done)
 - **Authorization** — row-level security in PostgreSQL (most likely), covering storage the same way
 - **API layer** — REST access with API keys, for clients outside the app
+- **Billing** — subscriptions and payments per organization, via Stripe or Polar
 
 > These are intentions, not commitments. The scope, the ordering and the
 > approach may all change — treat this as a sketch of where the project is
