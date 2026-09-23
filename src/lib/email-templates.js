@@ -33,7 +33,7 @@ export const loginCodeEmailTpl = ({ otp }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Your login code</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Enter the code below to sign in. This code expires in 10 minutes.</p>
+    <p style="font-size:14px;margin:0;color:#555;">Enter the code below to sign in. This code expires in 5 minutes.</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     <p style="font-size:32px;font-weight:700;margin:0;letter-spacing:8px;">${otp}</p>
@@ -48,7 +48,7 @@ export const magicLinkEmailTpl = ({ url }) =>
     <p style="font-size:20px;font-weight:600;margin:0;">Your login link</p>
   </td></tr>
   <tr><td style="padding:0 0 16px;">
-    <p style="font-size:14px;margin:0;color:#555;">Click the button below to sign in. This link expires in 1 hour.</p>
+    <p style="font-size:14px;margin:0;color:#555;">Click the button below to sign in. This link expires in 5 minutes.</p>
   </td></tr>
   <tr><td style="padding:0 0 32px;">
     ${button(url, "Sign in")}
