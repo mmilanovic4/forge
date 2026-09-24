@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { passwordLogin } from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
 
 function ChecklistRow({ ok, label, detail, action }) {
@@ -65,14 +66,16 @@ export function SecurityChecklist({
     toast.success("Verification email sent.");
   }
 
+  // In code and link modes the email itself is a way in, password or not.
   const independentMethods =
-    (hasPassword ? 1 : 0) +
+    (passwordLogin ? (hasPassword ? 1 : 0) : 1) +
     (passkeyCount > 0 ? 1 : 0) +
     (socialAccounts.length > 0 ? 1 : 0);
 
   // Only suggest what this deployment actually offers — social sign-in is
   // opt-in, so the passkey may be the sole alternative.
   const suggestions = [
+    passwordLogin && !hasPassword && "set a password",
     passkeyCount === 0 && "add a passkey",
     hasSocialProviders &&
       socialAccounts.length === 0 &&
@@ -98,18 +101,25 @@ export function SecurityChecklist({
         )}
 
         <div className="grid grid-cols-1 gap-3">
-          <ChecklistRow
-            ok={hasPassword}
-            label="Password"
-            detail={hasPassword ? "A password is set" : "No password set"}
-            action={
-              <Button variant="outline" size="sm" className="shrink-0" asChild>
-                <Link href="/settings/security">
-                  {hasPassword ? "Change" : "Manage"}
-                </Link>
-              </Button>
-            }
-          />
+          {passwordLogin && (
+            <ChecklistRow
+              ok={hasPassword}
+              label="Password"
+              detail={hasPassword ? "A password is set" : "No password set"}
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  asChild
+                >
+                  <Link href="/settings/security">
+                    {hasPassword ? "Change" : "Set password"}
+                  </Link>
+                </Button>
+              }
+            />
+          )}
 
           {emailEnabled && (
             <ChecklistRow
@@ -139,22 +149,32 @@ export function SecurityChecklist({
             />
           )}
 
-          <ChecklistRow
-            ok={twoFactorEnabled}
-            label="Two-factor authentication"
-            detail={
-              twoFactorEnabled
-                ? "Enabled with an authenticator app"
-                : "Not enabled"
-            }
-            action={
-              <Button variant="outline" size="sm" className="shrink-0" asChild>
-                <Link href="/settings/security">
-                  {twoFactorEnabled ? "Manage" : "Enable"}
-                </Link>
-              </Button>
-            }
-          />
+          {/* Two-factor only guards password sign-in; see the Security tab. */}
+          {(passwordLogin || twoFactorEnabled) && (
+            <ChecklistRow
+              ok={twoFactorEnabled}
+              label="Two-factor authentication"
+              detail={
+                twoFactorEnabled
+                  ? "Enabled with an authenticator app"
+                  : hasPassword
+                    ? "Not enabled"
+                    : "Needs a password first"
+              }
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  asChild
+                >
+                  <Link href="/settings/security">
+                    {twoFactorEnabled ? "Manage" : "Enable"}
+                  </Link>
+                </Button>
+              }
+            />
+          )}
 
           <ChecklistRow
             ok={passkeyCount > 0}

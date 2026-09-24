@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
-import { PasswordInput } from "@/components/password-input";
+import { PasswordHint, PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
+import { MIN_PASSWORD_LENGTH } from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
 
 export function ResetPasswordClient({ token }) {
@@ -61,16 +62,21 @@ export function ResetPasswordClient({ token }) {
             <PasswordInput
               autoFocus
               id="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD_LENGTH}
+              aria-describedby="password-hint"
               name="password"
               value={values.password}
               onChange={handleChange}
               required
             />
+            <PasswordHint id="password-hint" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">Confirm password</Label>
             <PasswordInput
               id="confirm"
+              autoComplete="new-password"
               name="confirm"
               value={values.confirm}
               onChange={handleChange}

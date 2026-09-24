@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { LogOut, Settings, Users } from "lucide-react";
@@ -33,10 +34,17 @@ export function UserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="cursor-pointer">
-          {image && <AvatarImage src={image} alt={initials} />}
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-        </Avatar>
+        {/* A real button, so the menu opens from the keyboard too. */}
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="focus-visible:ring-ring/50 cursor-pointer rounded-full outline-none focus-visible:ring-[3px]"
+        >
+          <Avatar>
+            {image && <AvatarImage src={image} alt="" />}
+            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+          </Avatar>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
         <div className="px-2 py-1.5">
@@ -45,19 +53,17 @@ export function UserMenu({
         </div>
         {!onboarding && (
           <>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => router.push("/settings/profile")}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/settings/profile">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => router.push("/users")}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Users
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/users">
+                <Users className="mr-2 h-4 w-4" />
+                Users
+              </Link>
             </DropdownMenuItem>
           </>
         )}

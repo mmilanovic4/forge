@@ -6,6 +6,7 @@ import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmAction } from "@/components/confirm-action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,14 +104,20 @@ export function Passkeys({ passkeys }) {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive shrink-0"
-                  onClick={() => handleRemove(passkey)}
+                <ConfirmAction
+                  title="Remove passkey?"
+                  description={`You won't be able to sign in with "${passkey.name || "Unnamed passkey"}" anymore.`}
+                  confirmLabel="Remove"
+                  onConfirm={() => handleRemove(passkey)}
                 >
-                  Remove
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive shrink-0"
+                  >
+                    Remove
+                  </Button>
+                </ConfirmAction>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
@@ -59,12 +60,11 @@ export function OrganizationSwitcher({ activeId, organizations }) {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push("/onboarding")}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Create organization
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/onboarding">
+            <Plus className="mr-2 h-4 w-4" />
+            Create organization
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

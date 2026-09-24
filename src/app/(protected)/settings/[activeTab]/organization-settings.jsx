@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
+import { ConfirmAction } from "@/components/confirm-action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -239,12 +240,11 @@ export function MembersCard({
                   </Badge>
                 )}
                 {editable && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    disabled={pending !== null}
-                    onClick={() =>
+                  <ConfirmAction
+                    title={`Remove ${member.user.name}?`}
+                    description="They lose access to this organization right away. You can invite them again later."
+                    confirmLabel="Remove"
+                    onConfirm={() =>
                       run(
                         `remove-${member.id}`,
                         () =>
@@ -256,16 +256,22 @@ export function MembersCard({
                       )
                     }
                   >
-                    Remove
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={pending !== null}
+                    >
+                      Remove
+                    </Button>
+                  </ConfirmAction>
                 )}
                 {isSelf && !isLastOwner && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    disabled={pending !== null}
-                    onClick={() =>
+                  <ConfirmAction
+                    title="Leave this organization?"
+                    description="You lose access right away, and need a new invitation to come back."
+                    confirmLabel="Leave"
+                    onConfirm={() =>
                       run(
                         "leave",
                         () => authClient.organization.leave({ organizationId }),
@@ -273,8 +279,15 @@ export function MembersCard({
                       )
                     }
                   >
-                    {pending === "leave" ? "Leaving..." : "Leave"}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={pending !== null}
+                    >
+                      {pending === "leave" ? "Leaving..." : "Leave"}
+                    </Button>
+                  </ConfirmAction>
                 )}
               </div>
             </div>
@@ -411,12 +424,12 @@ export function InvitationsCard({
                   >
                     Copy link
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    disabled={pending !== null}
-                    onClick={() =>
+                  <ConfirmAction
+                    title="Cancel invitation?"
+                    description={`The link sent to ${invitation.email} will stop working.`}
+                    confirmLabel="Cancel invitation"
+                    cancelLabel="Keep it"
+                    onConfirm={() =>
                       run(
                         `cancel-${invitation.id}`,
                         () =>
@@ -427,8 +440,15 @@ export function InvitationsCard({
                       )
                     }
                   >
-                    Cancel
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={pending !== null}
+                    >
+                      Cancel
+                    </Button>
+                  </ConfirmAction>
                 </div>
               </div>
             ))}
@@ -468,7 +488,7 @@ export function DeleteOrganizationCard({ organization }) {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                variant="destructive"
                 onClick={() =>
                   run(
                     "delete",

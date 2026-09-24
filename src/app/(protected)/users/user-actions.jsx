@@ -153,10 +153,7 @@ export function UserActions({ user, currentUserId }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleBan}
-            >
+            <AlertDialogAction variant="destructive" onClick={handleBan}>
               Ban
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -194,10 +191,7 @@ export function UserActions({ user, currentUserId }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
