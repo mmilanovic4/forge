@@ -68,6 +68,7 @@ export function VerifyTwoFactorClient({ redirectTo }) {
               <Input
                 autoFocus
                 id="code"
+                autoComplete="one-time-code"
                 placeholder="xxxxxxxx"
                 value={values.code}
                 onChange={handleCodeChange}
@@ -77,6 +78,7 @@ export function VerifyTwoFactorClient({ redirectTo }) {
               <Input
                 autoFocus
                 id="code"
+                autoComplete="one-time-code"
                 inputMode="numeric"
                 maxLength={6}
                 placeholder="000000"

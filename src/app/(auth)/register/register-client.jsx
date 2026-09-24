@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
-import { PasswordInput } from "@/components/password-input";
+import { PasswordHint, PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,9 +20,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
+import {
+  authMethod,
+  MIN_PASSWORD_LENGTH,
+  passwordLogin,
+} from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
-
-const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
 
 export function RegisterClient({ email, providers, redirectTo }) {
   const router = useRouter();
@@ -39,7 +42,6 @@ export function RegisterClient({ email, providers, redirectTo }) {
   const firstName = values.firstName.trim();
   const lastName = values.lastName.trim();
   const name = `${firstName} ${lastName}`;
-  const passwordless = authMethod === "otp" || authMethod === "magic-link";
 
   // Code and link sign-ins create the account on first use; sending a name
   // is what marks this as a sign-up rather than a login (see
@@ -118,7 +120,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
     !firstName ||
     !lastName ||
     !values.email ||
-    (!passwordless && !values.password) ||
+    (passwordLogin && !values.password) ||
     (authMethod === "otp" && otpSent && !values.otp);
 
   const buttonLabel = () => {
@@ -164,6 +166,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
             <Input
               autoFocus
               id="firstName"
+              autoComplete="given-name"
               name="firstName"
               placeholder="John"
               value={values.firstName}
@@ -175,6 +178,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
             <Label htmlFor="lastName">Last name</Label>
             <Input
               id="lastName"
+              autoComplete="family-name"
               name="lastName"
               placeholder="Doe"
               value={values.lastName}
@@ -186,6 +190,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              autoComplete="email"
               name="email"
               type="email"
               placeholder="john@example.com"
@@ -201,6 +206,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
               <Input
                 autoFocus
                 id="otp"
+                autoComplete="one-time-code"
                 name="otp"
                 type="text"
                 inputMode="numeric"
@@ -211,16 +217,20 @@ export function RegisterClient({ email, providers, redirectTo }) {
               />
             </div>
           )}
-          {!passwordless && (
+          {passwordLogin && (
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <PasswordInput
                 id="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD_LENGTH}
+                aria-describedby="password-hint"
                 name="password"
                 value={values.password}
                 onChange={handleChange}
                 required
               />
+              <PasswordHint id="password-hint" />
             </div>
           )}
           <Button type="submit" className="w-full" disabled={buttonDisabled}>

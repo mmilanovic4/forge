@@ -81,6 +81,7 @@ export function ForgotPasswordClient() {
             <Input
               autoFocus
               id="email"
+              autoComplete="email"
               name="email"
               type="email"
               placeholder="john@example.com"

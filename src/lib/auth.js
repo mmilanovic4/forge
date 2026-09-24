@@ -13,7 +13,13 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
 import { twoFactor } from "better-auth/plugins/two-factor";
 
-import { appName, cookiePrefix, organizationsEnabled } from "./app-config";
+import {
+  appName,
+  authMethod,
+  cookiePrefix,
+  MIN_PASSWORD_LENGTH,
+  organizationsEnabled,
+} from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
 import { sendEmail } from "./email";
@@ -44,8 +50,6 @@ const socialProviders = Object.fromEntries(
 );
 
 const conditionalPlugins = [];
-
-const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
 
 if (!emailEnabled && (authMethod === "otp" || authMethod === "magic-link")) {
   throw new Error(
@@ -205,6 +209,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: MIN_PASSWORD_LENGTH,
     requireEmailVerification: emailEnabled,
     sendResetPassword: emailEnabled
       ? async ({ user, url }) => {

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { revokeSessionAction } from "@/app/actions/sessions";
+import { ConfirmAction } from "@/components/confirm-action";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
@@ -30,15 +31,21 @@ export function RevokeSessionButton({ sessionId }) {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="text-destructive hover:text-destructive shrink-0"
-      disabled={loading}
-      onClick={handleRevoke}
+    <ConfirmAction
+      title="Revoke session?"
+      description="That device will be signed out and has to sign in again."
+      confirmLabel="Revoke"
+      onConfirm={handleRevoke}
     >
-      {loading ? "Revoking..." : "Revoke"}
-    </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-destructive hover:text-destructive shrink-0"
+        disabled={loading}
+      >
+        {loading ? "Revoking..." : "Revoke"}
+      </Button>
+    </ConfirmAction>
   );
 }
 
@@ -63,13 +70,15 @@ export function RevokeOtherSessionsButton() {
   }
 
   return (
-    <Button
-      variant="outline"
-      className="w-full"
-      disabled={loading}
-      onClick={handleRevokeAll}
+    <ConfirmAction
+      title="Revoke all other sessions?"
+      description="Every device except this one will be signed out."
+      confirmLabel="Revoke all"
+      onConfirm={handleRevokeAll}
     >
-      {loading ? "Revoking..." : "Revoke all other sessions"}
-    </Button>
+      <Button variant="outline" className="w-full" disabled={loading}>
+        {loading ? "Revoking..." : "Revoke all other sessions"}
+      </Button>
+    </ConfirmAction>
   );
 }

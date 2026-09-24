@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MIN_PASSWORD_LENGTH } from "@/lib/app-config";
 
 export function PasswordInput({ ...props }) {
   const [show, setShow] = useState(false);
@@ -18,6 +19,8 @@ export function PasswordInput({ ...props }) {
         variant="ghost"
         size="icon"
         className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+        aria-label={show ? "Hide password" : "Show password"}
+        aria-pressed={show}
         onClick={() => setShow(!show)}
       >
         {show ? (
@@ -27,5 +30,14 @@ export function PasswordInput({ ...props }) {
         )}
       </Button>
     </div>
+  );
+}
+
+// Pair with `aria-describedby={id}` on the input it describes.
+export function PasswordHint({ id }) {
+  return (
+    <p id={id} className="text-muted-foreground text-xs">
+      At least {MIN_PASSWORD_LENGTH} characters.
+    </p>
   );
 }

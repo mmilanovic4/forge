@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
 import { authClient } from "@/lib/auth-client";
 
-export function TwoFactor({ initialEnabled }) {
+export function TwoFactor({ initialEnabled, hasPassword }) {
   const router = useRouter();
   const [status, setStatus] = useState(initialEnabled ? "enabled" : "disabled");
   const {
@@ -128,12 +128,16 @@ export function TwoFactor({ initialEnabled }) {
         <CardHeader>
           <CardTitle>Two-factor authentication</CardTitle>
           <CardDescription>
-            Add an extra layer of security by requiring a code from your
-            authenticator app each time you sign in.
+            {hasPassword
+              ? "Add an extra layer of security by requiring a code from your authenticator app each time you sign in."
+              : "Two-factor authentication protects password sign-in, so set a password first."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-end">
-          <Button onClick={() => setStatus("enter_password")}>
+          <Button
+            disabled={!hasPassword}
+            onClick={() => setStatus("enter_password")}
+          >
             Enable 2FA
           </Button>
         </CardContent>
@@ -155,6 +159,7 @@ export function TwoFactor({ initialEnabled }) {
               <PasswordInput
                 id="tfa-password"
                 name="password"
+                autoComplete="current-password"
                 value={enableValues.password}
                 onChange={handleEnableChange}
                 required
@@ -204,6 +209,7 @@ export function TwoFactor({ initialEnabled }) {
               <Input
                 id="totp-code"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
                 placeholder="000000"
                 value={verifyValues.code}
@@ -294,6 +300,7 @@ export function TwoFactor({ initialEnabled }) {
                 <PasswordInput
                   id="disable-password"
                   name="password"
+                  autoComplete="current-password"
                   value={disableValues.password}
                   onChange={handleDisableChange}
                 />
@@ -305,7 +312,7 @@ export function TwoFactor({ initialEnabled }) {
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  variant="destructive"
                   disabled={disableLoading || !disableValues.password}
                   onClick={handleDisable}
                 >

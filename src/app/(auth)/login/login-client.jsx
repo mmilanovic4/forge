@@ -21,13 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/use-form";
+import { authMethod, passwordLogin } from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
-
-const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
-
-const isPasswordless = (authMethod) => {
-  return authMethod === "otp" || authMethod === "magic-link";
-};
 
 export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
   const router = useRouter();
@@ -138,11 +133,10 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
     continueSignIn(data);
   }
 
-  const passwordless = isPasswordless(authMethod);
   const buttonDisabled =
     loading ||
     !values.email ||
-    (!passwordless && !values.password) ||
+    (passwordLogin && !values.password) ||
     (authMethod === "otp" && otpSent && !values.otp);
 
   const buttonLabel = () => {
@@ -165,6 +159,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
             <Input
               autoFocus
               id="email"
+              autoComplete="email"
               name="email"
               type="email"
               placeholder="john@example.com"
@@ -180,6 +175,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
               <Input
                 autoFocus
                 id="otp"
+                autoComplete="one-time-code"
                 name="otp"
                 type="text"
                 inputMode="numeric"
@@ -190,12 +186,13 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
               />
             </div>
           )}
-          {!passwordless && (
+          {passwordLogin && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <PasswordInput
                   id="password"
+                  autoComplete="current-password"
                   name="password"
                   value={values.password}
                   onChange={handleChange}

@@ -71,10 +71,7 @@ export function DangerZone() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                onClick={handleDelete}
-              >
+              <AlertDialogAction variant="destructive" onClick={handleDelete}>
                 Delete account
               </AlertDialogAction>
             </AlertDialogFooter>

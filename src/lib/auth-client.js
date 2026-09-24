@@ -10,9 +10,7 @@ import {
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-import { organizationsEnabled } from "./app-config";
-
-const authMethod = process.env.NEXT_PUBLIC_AUTH_METHOD;
+import { authMethod, organizationsEnabled } from "./app-config";
 
 const conditionalClientPlugins = [];
 
