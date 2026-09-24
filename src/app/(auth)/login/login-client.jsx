@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
+import { CodeSentActions, LinkSentCard } from "@/components/email-sent";
 import { PasskeySignIn } from "@/components/passkey-sign-in";
 import { PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
@@ -26,9 +27,31 @@ import { authClient } from "@/lib/auth-client";
 
 export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
   const router = useRouter();
-  const { values, handleChange } = useForm({ email, password: "" });
+  const { values, handleChange, setValues } = useForm({ email, password: "" });
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+
+  const sendCode = () =>
+    authClient.emailOtp.sendVerificationOtp({
+      email: values.email,
+      type: "sign-in",
+    });
+
+  const sendLink = () =>
+    authClient.signIn.magicLink({
+      email: values.email,
+      callbackURL: redirectTo,
+      // Otherwise a failed link — e.g. for an address with no account — lands
+      // on callbackURL, which bounces a visitor to login unexplained.
+      errorCallbackURL: "/auth-error",
+    });
+
+  function changeEmail() {
+    setOtpSent(false);
+    setLinkSent(false);
+    setValues((prev) => ({ ...prev, otp: "" }));
+  }
 
   // A 2FA challenge interrupts the sign-in; carry the destination through it.
   function continueSignIn(data) {
@@ -46,10 +69,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
     // otp
     if (authMethod === "otp") {
       if (!otpSent) {
-        const { error } = await authClient.emailOtp.sendVerificationOtp({
-          email: values.email,
-          type: "sign-in",
-        });
+        const { error } = await sendCode();
 
         if (error) {
           toast.error(
@@ -81,18 +101,12 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
 
     // magic-link
     if (authMethod === "magic-link") {
-      const { error } = await authClient.signIn.magicLink({
-        email: values.email,
-        callbackURL: redirectTo,
-        // Otherwise a failed link — e.g. for an address with no account —
-        // lands on callbackURL, which bounces a visitor to login unexplained.
-        errorCallbackURL: "/auth-error",
-      });
+      const { error } = await sendLink();
 
       if (error) {
         toast.error(error.message ?? "Something went wrong. Please try again.");
       } else {
-        toast.success("Magic link sent! Check your email.");
+        setLinkSent(true);
       }
 
       setLoading(false);
@@ -146,6 +160,17 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
     return "Sign in";
   };
 
+  if (linkSent) {
+    return (
+      <LinkSentCard
+        email={values.email}
+        purpose="sign-in"
+        onResend={sendLink}
+        onChangeEmail={changeEmail}
+      />
+    );
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -183,6 +208,10 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
                 value={values.otp ?? ""}
                 onChange={handleChange}
                 required
+              />
+              <CodeSentActions
+                onResend={sendCode}
+                onChangeEmail={changeEmail}
               />
             </div>
           )}

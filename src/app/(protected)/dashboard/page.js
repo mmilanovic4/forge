@@ -14,6 +14,7 @@ import {
 import { auth } from "@/lib/auth";
 import { activeProviders, emailEnabled } from "@/lib/auth-config";
 import { getSession } from "@/lib/session";
+import { isNewAccount } from "@/lib/user";
 
 import { SecurityChecklist } from "./security-checklist";
 import { StatCards } from "./stat-cards";
@@ -48,7 +49,9 @@ export default async function Dashboard() {
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-center">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
+          <h1 className="text-2xl font-bold">
+            {isNewAccount(user) ? "Welcome" : "Welcome back"}, {user.name}!
+          </h1>
           <p className="text-muted-foreground">{user.email}</p>
         </div>
       </div>

@@ -5,13 +5,13 @@ import { useRef, useState, useTransition } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-import { uploadImageAction } from "@/app/actions/upload";
 import { cn } from "@/lib/utils";
 
 export function FileUpload({
   accept = "image/*",
   maxSize = 5 * 1024 * 1024,
-  action = uploadImageAction,
+  // A server action taking (prevState, formData), e.g. uploadAvatarAction.
+  action,
   onUploaded,
   disabled,
   className,

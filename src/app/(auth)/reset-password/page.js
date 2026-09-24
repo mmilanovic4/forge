@@ -18,7 +18,9 @@ export const metadata = {
 export default async function ResetPassword({ searchParams }) {
   const { token, error } = await searchParams;
 
-  if (error) {
+  // better-auth sends a bad or expired link here with ?error=; a visit with no
+  // token at all has nothing to reset either, and would only fail on submit.
+  if (error || typeof token !== "string" || !token) {
     return (
       <Card className="w-full max-w-md">
         <CardHeader>

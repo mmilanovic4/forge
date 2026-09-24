@@ -2,7 +2,7 @@ import "server-only";
 
 import { organizationsEnabled } from "./app-config";
 import { db } from "./db";
-import { avatarPrefix } from "./files";
+import { avatarPrefix, FILES_URL_PREFIX } from "./files";
 import { logger } from "./logger";
 import { storage } from "./storage";
 
@@ -79,6 +79,25 @@ export async function uploadFile(
   }
 
   return { key, contentType };
+}
+
+/**
+ * Deletes the stored object behind a user's avatar URL, if it is one of their
+ * own uploads — the prefix check keeps a stray value from ever reaching
+ * someone else's file. A failure only leaves an orphan behind, so it's logged
+ * rather than thrown.
+ */
+export async function removeAvatarFile(userId, imageUrl) {
+  const key = imageUrl?.startsWith(FILES_URL_PREFIX)
+    ? imageUrl.slice(FILES_URL_PREFIX.length)
+    : null;
+  if (!key?.startsWith(`${avatarPrefix(userId)}/`)) return;
+
+  try {
+    await storage.remove(key);
+  } catch (err) {
+    logger.warn("Failed to remove file", { err, key, userId });
+  }
 }
 
 /**
