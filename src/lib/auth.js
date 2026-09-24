@@ -22,7 +22,7 @@ import {
 } from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
-import { sendEmail } from "./email";
+import { queueEmail } from "./email";
 import {
   invitationEmailTpl,
   loginCodeEmailTpl,
@@ -60,8 +60,8 @@ if (!emailEnabled && (authMethod === "otp" || authMethod === "magic-link")) {
 if (emailEnabled && authMethod === "otp") {
   conditionalPlugins.push(
     emailOTP({
-      async sendVerificationOTP({ email, otp }) {
-        await sendEmail({
+      sendVerificationOTP({ email, otp }) {
+        queueEmail({
           to: email,
           subject: "Your login code",
           html: loginCodeEmailTpl({ otp }),
@@ -72,8 +72,8 @@ if (emailEnabled && authMethod === "otp") {
 } else if (emailEnabled && authMethod === "magic-link") {
   conditionalPlugins.push(
     magicLink({
-      async sendMagicLink({ email, url }) {
-        await sendEmail({
+      sendMagicLink({ email, url }) {
+        queueEmail({
           to: email,
           subject: "Your login link",
           html: magicLinkEmailTpl({ url }),
@@ -91,8 +91,8 @@ if (organizationsEnabled) {
       requireEmailVerificationOnInvitation: emailEnabled,
       // Without SMTP the inviter shares the link from the settings page.
       sendInvitationEmail: emailEnabled
-        ? async ({ id, email, organization, inviter }) => {
-            await sendEmail({
+        ? ({ id, email, organization, inviter }) => {
+            queueEmail({
               to: email,
               subject: `Join ${organization.name} on ${appName}`,
               html: invitationEmailTpl({
@@ -147,11 +147,20 @@ export const auth = betterAuth({
         }
       : undefined,
     user: {
-      // Only cleanup here — the ownership check has to run earlier, see
-      // assertNoOrphanedOrganizations.
-      delete: organizationsEnabled
-        ? { before: (user) => deleteSoloOrganizations(user.id) }
-        : undefined,
+      delete: {
+        // Only cleanup here — the ownership check has to run earlier, see
+        // assertNoOrphanedOrganizations.
+        before: organizationsEnabled
+          ? (user) => deleteSoloOrganizations(user.id)
+          : undefined,
+        // Covers self-deletion and the admin plugin's removeUser alike. The
+        // storage client is loaded only here, so everything else importing
+        // this file — proxy.js included — doesn't pull it in.
+        after: async (user) => {
+          const { removeAvatarFile } = await import("./upload");
+          await removeAvatarFile(user.id, user.image);
+        },
+      },
       update: {
         // `name` is derived, never editable in the UI, so keep it in sync
         // whenever firstName/lastName move. Every user write in the app goes
@@ -212,8 +221,8 @@ export const auth = betterAuth({
     minPasswordLength: MIN_PASSWORD_LENGTH,
     requireEmailVerification: emailEnabled,
     sendResetPassword: emailEnabled
-      ? async ({ user, url }) => {
-          await sendEmail({
+      ? ({ user, url }) => {
+          queueEmail({
             to: user.email,
             subject: "Reset your password",
             html: resetPasswordEmailTpl({
@@ -233,8 +242,8 @@ export const auth = betterAuth({
     ? {
         sendOnSignUp: true,
         autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({ user, url }) => {
-          await sendEmail({
+        sendVerificationEmail: ({ user, url }) => {
+          queueEmail({
             to: user.email,
             subject: "Verify your email",
             html: verifyEmailTpl({ firstName: greetingName(user), url }),

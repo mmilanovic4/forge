@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import { toast } from "sonner";
-
+import { ResendButton } from "@/components/resend-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,37 +14,7 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 
-// Long enough that an impatient double-click doesn't send two emails, short
-// enough that a lost one can be replaced without leaving the page.
-const RESEND_COOLDOWN_S = 30;
-
 export function VerifyEmailClient({ email, redirectTo, resent }) {
-  const [sending, setSending] = useState(false);
-  const [cooldown, setCooldown] = useState(resent ? RESEND_COOLDOWN_S : 0);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setTimeout(() => setCooldown((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [cooldown]);
-
-  async function handleResend() {
-    setSending(true);
-    const { error } = await authClient.sendVerificationEmail({
-      email,
-      callbackURL: redirectTo,
-    });
-    setSending(false);
-
-    if (error) {
-      toast.error(error.message ?? "Something went wrong. Please try again.");
-      return;
-    }
-
-    setCooldown(RESEND_COOLDOWN_S);
-    toast.success("Verification email sent.");
-  }
-
   const loginHref =
     redirectTo === "/dashboard"
       ? "/login"
@@ -78,17 +46,16 @@ export function VerifyEmailClient({ email, redirectTo, resent }) {
       </CardContent>
       <CardFooter className="flex flex-col gap-2">
         {email && (
-          <Button
+          <ResendButton
             className="w-full"
-            disabled={sending || cooldown > 0}
-            onClick={handleResend}
-          >
-            {sending
-              ? "Sending..."
-              : cooldown > 0
-                ? `Resend email (${cooldown}s)`
-                : "Resend email"}
-          </Button>
+            successMessage="Verification email sent."
+            onResend={() =>
+              authClient.sendVerificationEmail({
+                email,
+                callbackURL: redirectTo,
+              })
+            }
+          />
         )}
         <Button asChild variant="outline" className="w-full">
           <Link href={loginHref}>Back to login</Link>

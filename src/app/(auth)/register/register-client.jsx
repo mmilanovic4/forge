@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { toast } from "sonner";
 
+import { CodeSentActions, LinkSentCard } from "@/components/email-sent";
 import { PasswordHint, PasswordInput } from "@/components/password-input";
 import { SocialSignIn } from "@/components/social-sign-in";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import { authClient } from "@/lib/auth-client";
 
 export function RegisterClient({ email, providers, redirectTo }) {
   const router = useRouter();
-  const { values, handleChange } = useForm({
+  const { values, handleChange, setValues } = useForm({
     firstName: "",
     lastName: "",
     email,
@@ -43,16 +44,33 @@ export function RegisterClient({ email, providers, redirectTo }) {
   const lastName = values.lastName.trim();
   const name = `${firstName} ${lastName}`;
 
+  const sendCode = () =>
+    authClient.emailOtp.sendVerificationOtp({
+      email: values.email,
+      type: "sign-in",
+    });
+
+  const sendLink = () =>
+    authClient.signIn.magicLink({
+      email: values.email,
+      name,
+      callbackURL: redirectTo,
+      errorCallbackURL: "/auth-error",
+    });
+
+  function changeEmail() {
+    setOtpSent(false);
+    setLinkSent(false);
+    setValues((prev) => ({ ...prev, otp: "" }));
+  }
+
   // Code and link sign-ins create the account on first use; sending a name
   // is what marks this as a sign-up rather than a login (see
   // validateUserInfo in lib/auth.js).
   async function signUp() {
     if (authMethod === "otp") {
       if (!otpSent) {
-        const { error } = await authClient.emailOtp.sendVerificationOtp({
-          email: values.email,
-          type: "sign-in",
-        });
+        const { error } = await sendCode();
         if (!error) setOtpSent(true);
         return { error };
       }
@@ -68,12 +86,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
     }
 
     if (authMethod === "magic-link") {
-      const { error } = await authClient.signIn.magicLink({
-        email: values.email,
-        name,
-        callbackURL: redirectTo,
-        errorCallbackURL: "/auth-error",
-      });
+      const { error } = await sendLink();
       if (!error) setLinkSent(true);
       return { error };
     }
@@ -132,24 +145,12 @@ export function RegisterClient({ email, providers, redirectTo }) {
 
   if (linkSent) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
-            We sent a sign-up link to <strong>{values.email}</strong>. Open it
-            to finish creating your account.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setLinkSent(false)}
-          >
-            Use a different email
-          </Button>
-        </CardFooter>
-      </Card>
+      <LinkSentCard
+        email={values.email}
+        purpose="sign-up"
+        onResend={sendLink}
+        onChangeEmail={changeEmail}
+      />
     );
   }
 
@@ -214,6 +215,10 @@ export function RegisterClient({ email, providers, redirectTo }) {
                 value={values.otp ?? ""}
                 onChange={handleChange}
                 required
+              />
+              <CodeSentActions
+                onResend={sendCode}
+                onChangeEmail={changeEmail}
               />
             </div>
           )}

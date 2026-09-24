@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
-import { removeAvatarAction } from "@/app/actions/upload";
+import { removeAvatarAction, uploadAvatarAction } from "@/app/actions/upload";
 import { FileUpload } from "@/components/file-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,12 +35,8 @@ export function ProfileForm({ user, s3Enabled }) {
   });
   const [loading, setLoading] = useState(false);
 
-  async function handleAvatarUploaded({ url }) {
-    const { error } = await authClient.updateUser({ image: url });
-    if (error) {
-      toast.error(error.message ?? "Could not update avatar.");
-      return;
-    }
+  // uploadAvatarAction has already saved it, and removed the old one.
+  function handleAvatarUploaded({ url }) {
     setValues((prev) => ({ ...prev, image: url }));
     toast.success("Avatar updated.");
     router.refresh();
@@ -184,6 +180,7 @@ export function ProfileForm({ user, s3Enabled }) {
             <FileUpload
               accept="image/*"
               className="w-full p-4"
+              action={uploadAvatarAction}
               onUploaded={handleAvatarUploaded}
             />
             {values.image && (
