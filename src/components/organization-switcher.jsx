@@ -39,13 +39,30 @@ export function OrganizationSwitcher({ activeId, organizations }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="max-w-48 gap-2">
-          <Building2 className="h-4 w-4 shrink-0" />
-          <span className="truncate">{active?.name}</span>
-          <ChevronsUpDown className="text-muted-foreground h-3 w-3 shrink-0" />
+        {/* On phones the name gives way to the icon; the accessible name and
+            the menu's first line still say which organization is active. */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="max-w-48 gap-2"
+          aria-label={`Switch organization, current: ${active?.name}`}
+        >
+          <Building2 className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="truncate max-sm:sr-only">{active?.name}</span>
+          <ChevronsUpDown
+            className="text-muted-foreground h-3 w-3 shrink-0"
+            aria-hidden
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
+        <DropdownMenuLabel className="sm:hidden">
+          <p className="text-muted-foreground text-xs font-normal">
+            Current organization
+          </p>
+          <p className="truncate">{active?.name}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="sm:hidden" />
         <DropdownMenuLabel className="text-muted-foreground text-xs">
           Organizations
         </DropdownMenuLabel>
