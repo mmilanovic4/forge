@@ -12,7 +12,7 @@ export function slugify(text, { trim = true } = {}) {
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
-    // "Alice's workspace" → "alices-workspace", not "alice-s-workspace".
+    // "Alice's team" → "alices-team", not "alice-s-team".
     .replace(/['’]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+/, "")
