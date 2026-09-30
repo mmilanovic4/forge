@@ -23,7 +23,7 @@ export default async function Onboarding() {
     <OnboardingClient
       invitations={invitations}
       hasOrganization={organizations.length > 0}
-      suggestedName={`${firstName || name.split(" ")[0]}'s workspace`}
+      suggestedName={`Team ${firstName || name.split(" ")[0]}`}
     />
   );
 }

@@ -134,7 +134,7 @@ export const auth = betterAuth({
       ? {
           create: {
             // Sessions start without an active organization; pick one here so
-            // every sign-in method lands in a workspace without a round trip.
+            // every sign-in method lands in one without a round trip.
             before: async (session) => ({
               data: {
                 ...session,

@@ -143,7 +143,7 @@ export function OnboardingClient({
           <CardTitle>Create an organization</CardTitle>
           <CardDescription>
             {hasOrganization
-              ? "Start a new workspace. You will be its owner."
+              ? "Start a new organization. You will be its owner."
               : "Everything in Forge lives in an organization. You can invite your team once it's set up."}
           </CardDescription>
         </CardHeader>
