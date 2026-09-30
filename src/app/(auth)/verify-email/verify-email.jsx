@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { ResendButton } from "@/components/resend-button";
+import { ResendLink } from "@/components/resend-link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,9 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useSignedInRedirect } from "@/hooks/use-signed-in-redirect";
 import { authClient } from "@/lib/auth-client";
 
 export function VerifyEmailClient({ email, redirectTo, resent }) {
+  useSignedInRedirect(redirectTo);
+
   const loginHref =
     redirectTo === "/dashboard"
       ? "/login"
@@ -37,17 +40,14 @@ export function VerifyEmailClient({ email, redirectTo, resent }) {
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-2">
         <p className="text-muted-foreground text-sm">
           Once verified, you will be automatically signed in. The link expires
           in 1 hour — if it has, or {"didn't"} arrive, check your spam folder or
           send a new one.
         </p>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-2">
         {email && (
-          <ResendButton
-            className="w-full"
+          <ResendLink
             successMessage="Verification email sent."
             onResend={() =>
               authClient.sendVerificationEmail({
@@ -57,6 +57,8 @@ export function VerifyEmailClient({ email, redirectTo, resent }) {
             }
           />
         )}
+      </CardContent>
+      <CardFooter>
         <Button asChild variant="outline" className="w-full">
           <Link href={loginHref}>Back to login</Link>
         </Button>

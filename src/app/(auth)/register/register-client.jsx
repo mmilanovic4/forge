@@ -148,6 +148,7 @@ export function RegisterClient({ email, providers, redirectTo }) {
       <LinkSentCard
         email={values.email}
         purpose="sign-up"
+        redirectTo={redirectTo}
         onResend={sendLink}
         onChangeEmail={changeEmail}
       />
