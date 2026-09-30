@@ -165,6 +165,7 @@ export function LoginClient({ email, emailEnabled, providers, redirectTo }) {
       <LinkSentCard
         email={values.email}
         purpose="sign-in"
+        redirectTo={redirectTo}
         onResend={sendLink}
         onChangeEmail={changeEmail}
       />
