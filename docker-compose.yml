@@ -16,6 +16,8 @@ services:
   mailpit:
     image: axllent/mailpit
     restart: unless-stopped
+    environment:
+      MP_SMTP_DISABLE_RDNS: "true"
     ports:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI
