@@ -29,6 +29,8 @@ import { UserActions } from "./user-actions";
 
 const LIMIT_OPTIONS = [10, 20, 50];
 const DEFAULT_LIMIT = 10;
+// Fits a 32-bit int, the narrowest type the offset could be bound as.
+const MAX_OFFSET = 2 ** 31 - 1;
 
 function buildUrl(query, page, limit, search) {
   const params = new URLSearchParams();
@@ -262,8 +264,16 @@ export default async function Users({ searchParams }) {
   const limit = LIMIT_OPTIONS.includes(Number(limitParam))
     ? Number(limitParam)
     : DEFAULT_LIMIT;
-  const page = Math.max(1, Number(pageParam) || 1);
-  const search = searchParam ?? "";
+  // Both reach the query as-is, so anything a hand-edited URL can produce — a
+  // fraction, Infinity, a repeated key arriving as an array — falls back here.
+  // The offset is capped too, since the first query runs before the total is
+  // known; any page past the end lands on the last one anyway.
+  const pageNumber = Number(pageParam);
+  const page = Math.min(
+    Number.isSafeInteger(pageNumber) && pageNumber > 0 ? pageNumber : 1,
+    Math.floor(MAX_OFFSET / limit) + 1,
+  );
+  const search = typeof searchParam === "string" ? searchParam : "";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
