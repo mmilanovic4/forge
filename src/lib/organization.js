@@ -77,6 +77,11 @@ export async function deleteSoloOrganizations(userId) {
     .map(({ organization }) => organization.id);
 
   if (solo.length) {
+    // By id alone, even if someone accepted an invitation since the read: the
+    // cascade takes their membership along. Skipping the organization instead
+    // would leave it with a member and no owner once this user is gone. Their
+    // member insert and this delete lock the same organization row, so one of
+    // the two always sees the other.
     await db.organization.deleteMany({ where: { id: { in: solo } } });
   }
 }

@@ -19,6 +19,7 @@ import {
   cookiePrefix,
   MIN_PASSWORD_LENGTH,
   organizationsEnabled,
+  passwordLogin,
 } from "./app-config";
 import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
@@ -217,7 +218,10 @@ export const auth = betterAuth({
     },
   },
   emailAndPassword: {
-    enabled: true,
+    // Gates only the sign-in and sign-up endpoints, so in code and link modes a
+    // password left over from an earlier mode can't log anyone in, while
+    // two-factor's password check keeps working for turning it off.
+    enabled: passwordLogin,
     minPasswordLength: MIN_PASSWORD_LENGTH,
     requireEmailVerification: emailEnabled,
     sendResetPassword: emailEnabled

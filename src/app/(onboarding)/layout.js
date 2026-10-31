@@ -7,8 +7,9 @@ import { organizationsEnabled } from "@/lib/app-config";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
-// Signed in, but deliberately outside (protected)/layout.js: that layout sends
-// users without an organization here, so it can't also wrap this page.
+// Signed in, but deliberately outside (protected)/(workspace)/layout.js: that
+// layout sends users without an organization here, so it can't also wrap this
+// page.
 export default async function OnboardingLayout({ children }) {
   if (!organizationsEnabled) {
     redirect("/dashboard");
@@ -28,7 +29,7 @@ export default async function OnboardingLayout({ children }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header>
-        <UserMenu user={session.user} onboarding={!hasOrganization} />
+        <UserMenu user={session.user} noOrganization={!hasOrganization} />
       </Header>
       <main className="flex flex-1 items-center justify-center p-4">
         {children}
