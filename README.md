@@ -132,7 +132,7 @@ A few things to know:
 
 ## Organizations
 
-Setting `NEXT_PUBLIC_ORGANIZATIONS=true` turns on Better Auth's organization plugin and makes membership **mandatory**: every signed-in user works inside an active organization, and one without any is sent to `/onboarding` before reaching a protected page.
+Setting `NEXT_PUBLIC_ORGANIZATIONS=true` turns on Better Auth's organization plugin and makes membership **mandatory**: every signed-in user works inside an active organization, and one without any is sent to `/onboarding` before reaching the dashboard or `/users`. **Settings** stays reachable without one, so they can still manage or delete their account.
 
 - **Joining** — onboarding lists the user's pending invitations; otherwise they create an organization (a name is suggested) and become its owner. This happens after sign-in rather than at sign-up, so it works the same for every sign-in method, and existing accounts are onboarded on their next visit.
 - **Invitations** — owners and admins invite people from **Settings → Organization**. The email links to `/accept-invitation/<id>`, which walks invitees without an account through sign-up with the address prefilled and brings them back to accept. Without SMTP, the invitation link is copied to the clipboard to share by hand.

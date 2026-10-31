@@ -16,11 +16,11 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { getInitials } from "@/lib/user";
 
-// `onboarding` hides the links to protected pages, which would only bounce a
-// user without an organization back to onboarding.
+// `noOrganization` hides the link to /users, which would only bounce the user
+// back to onboarding. Settings stays: it holds their account.
 export function UserMenu({
   user: { name, firstName, lastName, email, image },
-  onboarding = false,
+  noOrganization = false,
 }) {
   const router = useRouter();
 
@@ -51,21 +51,19 @@ export function UserMenu({
           <p className="text-sm font-medium">{name}</p>
           <p className="text-muted-foreground text-xs">{email}</p>
         </div>
-        {!onboarding && (
-          <>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/settings/profile">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/users">
-                <Users className="mr-2 h-4 w-4" />
-                Users
-              </Link>
-            </DropdownMenuItem>
-          </>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/settings/profile">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        {!noOrganization && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/users">
+              <Users className="mr-2 h-4 w-4" />
+              Users
+            </Link>
+          </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>

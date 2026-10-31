@@ -31,14 +31,13 @@ export async function requireSession() {
 
 /**
  * The caller's active organization and their membership in it, or `null` when
- * organizations are switched off. Users without one are sent to onboarding —
- * this is the gate that makes membership mandatory.
+ * they belong to none or organizations are switched off.
  *
  * The session's activeOrganizationId is only a hint: it can point at an
  * organization the user has since left, been removed from, or that was
  * deleted. Membership is re-checked here, and a stale value is replaced.
  */
-export const requireActiveOrganization = cache(async () => {
+export const getActiveOrganization = cache(async () => {
   const session = await requireSession();
 
   if (!organizationsEnabled) return null;
@@ -55,7 +54,7 @@ export const requireActiveOrganization = cache(async () => {
 
   if (!member) {
     const organizationId = await defaultOrganizationId(userId);
-    if (!organizationId) redirect("/onboarding");
+    if (!organizationId) return null;
 
     member = await findMember(organizationId);
     await db.session.update({
@@ -67,3 +66,19 @@ export const requireActiveOrganization = cache(async () => {
   const { organization, ...membership } = member;
   return { organization, member: membership };
 });
+
+/**
+ * Same as getActiveOrganization, but users without an organization are sent to
+ * onboarding — this is the gate that makes membership mandatory for anything
+ * organization-scoped. Their own account stays reachable, so it isn't applied
+ * to settings.
+ */
+export async function requireActiveOrganization() {
+  const scope = await getActiveOrganization();
+
+  if (organizationsEnabled && !scope) {
+    redirect("/onboarding");
+  }
+
+  return scope;
+}

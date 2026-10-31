@@ -1,7 +1,17 @@
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { emailEnabled } from "@/lib/auth-config";
 import { db } from "@/lib/db";
 import { canManageOrganization } from "@/lib/organization-roles";
-import { requireActiveOrganization, requireSession } from "@/lib/session";
+import { getActiveOrganization, requireSession } from "@/lib/session";
 
 import {
   DeleteOrganizationCard,
@@ -10,11 +20,36 @@ import {
   MembersCard,
 } from "./organization-settings";
 
+function NoOrganizationCard() {
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>No organization</CardTitle>
+        <CardDescription>
+          You&apos;re not part of an organization. Create one, or join one
+          you&apos;ve been invited to.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center justify-end">
+        <Button asChild>
+          <Link href="/onboarding">Set up organization</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export async function OrganizationTab() {
-  const [session, { organization, member }] = await Promise.all([
+  const [session, scope] = await Promise.all([
     requireSession(),
-    requireActiveOrganization(),
+    getActiveOrganization(),
   ]);
+
+  if (!scope) {
+    return <NoOrganizationCard />;
+  }
+
+  const { organization, member } = scope;
   const canManage = canManageOrganization(member.role);
 
   const [members, invitations] = await Promise.all([
