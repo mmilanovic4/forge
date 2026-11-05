@@ -64,7 +64,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Docker
 
-The included `docker-compose.yml` spins up [PostgreSQL](https://www.postgresql.org/) and [Mailpit](https://mailpit.axllent.org/).
+The included `compose.yml` spins up [PostgreSQL](https://www.postgresql.org/) and [Mailpit](https://mailpit.axllent.org/).
 
 ```bash
 docker compose up -d    # start in background
@@ -181,7 +181,7 @@ If you'd rather have the login button create an account on demand too (the more 
 
 File uploads (such as profile avatars) are stored in any S3-compatible object storage — [AWS S3](https://aws.amazon.com/s3/), [Cloudflare R2](https://developers.cloudflare.com/r2/), [MinIO](https://min.io/) and others, all work with the same variables.
 
-For local development, the included `docker-compose.yml` runs MinIO and creates the bucket automatically. Add the following to `.env`:
+For local development, the included `compose.yml` runs MinIO and creates the bucket automatically. Add the following to `.env`:
 
 ```bash
 S3_BUCKET=uploads
