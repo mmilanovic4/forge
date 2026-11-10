@@ -1,7 +1,11 @@
 import "server-only";
 
 import { db } from "./db";
-import { requireActiveOrganization, requireSession } from "./session";
+import {
+  requireActiveOrganization,
+  requireSession,
+  requireUserListAccess,
+} from "./session";
 
 // With organizations on, a user only ever sees the members of their active
 // organization. Without them the app is single-tenant, so everyone is visible.
@@ -12,8 +16,10 @@ async function userScope() {
     : {};
 }
 
+// Scoped to the active organization, or — with no organizations to scope by —
+// kept to admins: the rows carry each account's email, role and ban status.
 export async function listUsers({ search, limit, offset }) {
-  await requireSession();
+  await requireUserListAccess();
 
   const scope = await requireActiveOrganization();
   const where = {

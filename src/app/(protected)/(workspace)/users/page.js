@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/table";
 import { organizationsEnabled } from "@/lib/app-config";
 import { listUsers } from "@/lib/data-helper";
-import { getSession } from "@/lib/session";
-import { getInitials } from "@/lib/user";
+import { requireUserListAccess } from "@/lib/session";
+import { getInitials, isAdmin } from "@/lib/user";
 
 import { SearchInput } from "./search-input";
 import { UserActions } from "./user-actions";
@@ -74,13 +74,15 @@ function Highlight({ text, query }) {
 
 async function UsersTable({ query, page, limit, search }) {
   const [session, firstTry] = await Promise.all([
-    getSession(),
+    requireUserListAccess(),
     listUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
 
-  const isAdmin = session?.user?.role === "admin";
-  const columns = 5 + (organizationsEnabled ? 1 : 0) + (isAdmin ? 1 : 0);
-  const currentUserId = session?.user?.id;
+  // Everyone allowed in sees the list; only a global admin gets to act on it.
+  // The admin endpoints behind those actions check the same.
+  const canManage = isAdmin(session.user);
+  const columns = 5 + (organizationsEnabled ? 1 : 0) + (canManage ? 1 : 0);
+  const currentUserId = session.user.id;
 
   const total = firstTry?.total ?? 0;
   const totalPages = Math.ceil(total / limit);
@@ -108,7 +110,7 @@ async function UsersTable({ query, page, limit, search }) {
             <TableHead>{organizationsEnabled ? "App role" : "Role"}</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Joined</TableHead>
-            {isAdmin && <TableHead />}
+            {canManage && <TableHead />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -158,9 +160,7 @@ async function UsersTable({ query, page, limit, search }) {
                     </TableCell>
                   )}
                   <TableCell>
-                    <Badge
-                      variant={user.role === "admin" ? "default" : "secondary"}
-                    >
+                    <Badge variant={isAdmin(user) ? "default" : "secondary"}>
                       {user.role ?? "user"}
                     </Badge>
                   </TableCell>
@@ -176,7 +176,7 @@ async function UsersTable({ query, page, limit, search }) {
                       year: "numeric",
                     })}
                   </TableCell>
-                  {isAdmin && (
+                  {canManage && (
                     <TableCell>
                       <UserActions user={user} currentUserId={currentUserId} />
                     </TableCell>
@@ -258,6 +258,10 @@ export const metadata = {
 };
 
 export default async function Users({ searchParams }) {
+  // Before anything renders: the table's own check runs inside the Suspense
+  // boundary, after the shell has already been sent.
+  await requireUserListAccess();
+
   const query = await searchParams;
   const { page: pageParam, limit: limitParam, search: searchParam } = query;
 

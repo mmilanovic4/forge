@@ -13,13 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { organizationsEnabled } from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
-import { getInitials } from "@/lib/user";
+import { getInitials, isAdmin } from "@/lib/user";
 
-// `noOrganization` hides the link to /users, which would only bounce the user
-// back to onboarding. Settings stays: it holds their account.
+// /users lists the active organization's members — or, without organizations,
+// every account, which only admins may see. `noOrganization` hides the link
+// too, since it would only bounce the user back to onboarding. Settings stays:
+// it holds their account.
 export function UserMenu({
-  user: { name, firstName, lastName, email, image },
+  user: { name, firstName, lastName, email, image, role },
   noOrganization = false,
 }) {
   const router = useRouter();
@@ -57,7 +60,7 @@ export function UserMenu({
             Settings
           </Link>
         </DropdownMenuItem>
-        {!noOrganization && (
+        {(organizationsEnabled || isAdmin({ role })) && !noOrganization && (
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link href="/users">
               <Users className="mr-2 h-4 w-4" />

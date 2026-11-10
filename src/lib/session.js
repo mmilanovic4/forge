@@ -1,13 +1,14 @@
 import "server-only";
 
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
 import { organizationsEnabled } from "./app-config";
 import { auth } from "./auth";
 import { db } from "./db";
 import { defaultOrganizationId } from "./organization";
+import { isAdmin } from "./user";
 
 // Deduped per request, so a page and the queries it triggers share one lookup
 // instead of hitting the session store once each.
@@ -27,6 +28,26 @@ export async function requireSession() {
   }
 
   return session;
+}
+
+// For anything only a global admin may see or do. Everyone else gets a 404
+// rather than a redirect, so the page doesn't confirm it exists.
+export async function requireAdmin() {
+  const session = await requireSession();
+
+  if (!isAdmin(session.user)) {
+    notFound();
+  }
+
+  return session;
+}
+
+// Who may open the user list. With organizations on it only ever holds the
+// members of the caller's active organization — people they already see under
+// Settings → Organization. Without them it is every account in the app, email
+// addresses included, and anyone can sign up: admins only.
+export async function requireUserListAccess() {
+  return organizationsEnabled ? requireSession() : requireAdmin();
 }
 
 /**

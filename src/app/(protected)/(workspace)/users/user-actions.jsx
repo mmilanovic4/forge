@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { isAdmin } from "@/lib/user";
 
 export function UserActions({ user, currentUserId }) {
   const router = useRouter();
@@ -111,7 +112,7 @@ export function UserActions({ user, currentUserId }) {
             </>
           ) : (
             <>
-              {user.role === "admin" ? (
+              {isAdmin(user) ? (
                 <DropdownMenuItem
                   onClick={() => setRemoveAdminDialogOpen(true)}
                 >
