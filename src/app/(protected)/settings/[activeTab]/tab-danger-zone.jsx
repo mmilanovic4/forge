@@ -1,83 +1,34 @@
-"use client";
+import { headers } from "next/headers";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { auth } from "@/lib/auth";
+import { emailEnabled } from "@/lib/auth-config";
+import { getSession } from "@/lib/session";
 
-import { toast } from "sonner";
+import { DeleteAccountCard } from "./delete-account-card";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
+// A session alone doesn't delete the account; what confirms it depends on what
+// this deployment and this account have. The server enforces the same — see
+// `deleteUser` and the /delete-user check in lib/auth.js.
+export async function DangerZone() {
+  const [session, accounts] = await Promise.all([
+    getSession(),
+    // Only the fallback below needs to know about a password.
+    emailEnabled ? [] : auth.api.listUserAccounts({ headers: await headers() }),
+  ]);
 
-export function DangerZone() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  async function handleDelete() {
-    setLoading(true);
-
-    const { error } = await authClient.deleteUser({
-      callbackURL: "/",
-    });
-
-    if (error) {
-      toast.error(error.message ?? "Something went wrong. Please try again.");
-      setLoading(false);
-      return;
-    }
-
-    router.push("/");
-  }
-
-  return (
-    <Card className="border-destructive/50 w-full">
-      <CardHeader>
-        <CardTitle className="text-destructive">Danger Zone</CardTitle>
-        <CardDescription>
-          Permanently delete your account and all associated data.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex items-center justify-end">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={loading}>
-              {loading ? "Deleting..." : "Delete account"}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. Your account and all associated
-                data will be permanently deleted.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                Delete account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+  const hasPassword = accounts.some(
+    (account) => account.providerId === "credential",
   );
+
+  // "email": a link is sent, and opening it deletes the account.
+  // "password": no email to send, so the password is asked for again.
+  // "session": neither exists (social or passkey only); better-auth then
+  //   insists on a session less than a day old.
+  const confirmBy = emailEnabled
+    ? "email"
+    : hasPassword
+      ? "password"
+      : "session";
+
+  return <DeleteAccountCard confirmBy={confirmBy} email={session.user.email} />;
 }

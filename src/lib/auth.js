@@ -25,6 +25,7 @@ import { activeProviders, emailEnabled } from "./auth-config";
 import { db } from "./db";
 import { queueEmail } from "./email";
 import {
+  deleteAccountEmailTpl,
   invitationEmailTpl,
   loginCodeEmailTpl,
   magicLinkEmailTpl,
@@ -38,6 +39,7 @@ import {
   defaultOrganizationId,
   deleteSoloOrganizations,
 } from "./organization";
+import { isAdmin } from "./user";
 
 // firstName is optional (GitHub never sends one), so fall back to the first
 // word of the name the provider did give us before dropping the greeting.
@@ -49,6 +51,17 @@ const socialProviders = Object.fromEntries(
     { clientId, clientSecret, mapProfileToUser, disableImplicitSignUp: true },
   ]),
 );
+
+// Comma-separated IPs or CIDR ranges of the reverse proxies in front of the
+// app. Without them only a single-valued X-Forwarded-For is believed; with
+// them the chain is walked back to the first address that isn't a proxy.
+const trustedProxies = (process.env.TRUSTED_PROXIES ?? "")
+  .split(",")
+  .map((entry) => entry.trim())
+  .filter(Boolean);
+
+// Seconds. The email says "1 hour" — keep the two in step.
+const DELETE_ACCOUNT_LINK_TTL = 60 * 60;
 
 const conditionalPlugins = [];
 
@@ -117,6 +130,19 @@ export const auth = betterAuth({
   }),
   advanced: {
     cookiePrefix,
+    ipAddress: trustedProxies.length ? { trustedProxies } : undefined,
+  },
+  // On in production only (better-auth's default). Counters live in the
+  // database rather than in memory, so they hold across instances and
+  // restarts — the `rateLimit` table in schema.prisma. better-auth already
+  // limits sign-in, sign-up and its own email-sending endpoints; these are the
+  // ones this app adds that send email too.
+  rateLimit: {
+    storage: "database",
+    customRules: {
+      "/delete-user": { window: 60, max: 3 },
+      "/organization/invite-member": { window: 60, max: 10 },
+    },
   },
   // Route better-auth's own warnings and errors through the app logger so they
   // share its format.
@@ -148,6 +174,13 @@ export const auth = betterAuth({
         }
       : undefined,
     user: {
+      create: {
+        // An avatar is only ever one of the user's own uploads (see the
+        // /update-user check below), and a new account has none. Sign-up
+        // accepts an `image` all the same, so drop it here — the one place
+        // every way of creating a user passes through.
+        before: (user) => ({ data: { ...user, image: null } }),
+      },
       delete: {
         // Only cleanup here — the ownership check has to run earlier, see
         // assertNoOrphanedOrganizations.
@@ -212,6 +245,23 @@ export const auth = betterAuth({
     },
     deleteUser: {
       enabled: true,
+      // A session alone must not be enough to delete the account behind it.
+      // With email, the request only sends a link and the account goes when
+      // it is opened; without, the /delete-user check below asks for the
+      // password instead.
+      sendDeleteAccountVerification: emailEnabled
+        ? ({ user, url }) => {
+            queueEmail({
+              to: user.email,
+              subject: "Confirm deleting your account",
+              html: deleteAccountEmailTpl({
+                firstName: greetingName(user),
+                url,
+              }),
+            });
+          }
+        : undefined,
+      deleteTokenExpiresIn: DELETE_ACCOUNT_LINK_TTL,
       beforeDelete: organizationsEnabled
         ? (user) => assertNoOrphanedOrganizations(user.id)
         : undefined,
@@ -224,6 +274,9 @@ export const auth = betterAuth({
     enabled: passwordLogin,
     minPasswordLength: MIN_PASSWORD_LENGTH,
     requireEmailVerification: emailEnabled,
+    // Whoever prompted the reset may be the reason for it — a session they
+    // already hold must not outlive the old password.
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: emailEnabled
       ? ({ user, url }) => {
           queueEmail({
@@ -273,6 +326,34 @@ export const auth = betterAuth({
         }
       }
 
+      if (ctx.path === "/delete-user") {
+        const session = await getSessionFromCtx(ctx);
+        // Signed out: leave the 401 to the endpoint.
+        if (session) {
+          // The endpoint runs this too, but only once the emailed link is
+          // opened — say so now rather than after sending it.
+          if (organizationsEnabled) {
+            await assertNoOrphanedOrganizations(session.user.id);
+          }
+
+          // No email to confirm through, so the password stands in for it.
+          // Accounts without one (social, passkey) fall back to better-auth's
+          // own rule: the session must be less than a day old.
+          if (!emailEnabled && !ctx.body?.password && !ctx.body?.token) {
+            const account =
+              await ctx.context.internalAdapter.findCredentialAccount(
+                session.user.id,
+              );
+            if (account?.password) {
+              throw new APIError("BAD_REQUEST", {
+                code: "PASSWORD_REQUIRED",
+                message: "Enter your password to delete your account.",
+              });
+            }
+          }
+        }
+      }
+
       // The admin plugin's removeUser has no beforeDelete of its own, and it
       // clears the target's sessions before deleting them — so the ownership
       // check runs here, ahead of the endpoint. Only for admins: anyone else
@@ -284,7 +365,7 @@ export const auth = betterAuth({
         ctx.body?.userId
       ) {
         const session = await getSessionFromCtx(ctx);
-        if (session?.user.role !== "admin") return;
+        if (!isAdmin(session?.user)) return;
         await assertNoOrphanedOrganizations(ctx.body.userId);
       }
     }),

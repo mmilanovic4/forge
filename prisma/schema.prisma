@@ -97,6 +97,16 @@ model Verification {
   @@map("verification")
 }
 
+// better-auth's rate limiter (rateLimit.storage: "database" in lib/auth.js).
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rateLimit")
+}
+
 model Passkey {
   id           String    @id
   name         String?
