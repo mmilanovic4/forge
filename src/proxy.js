@@ -23,12 +23,15 @@ export default async function proxy(request) {
   try {
     session = await auth.api.getSession({ headers: request.headers });
   } catch (error) {
-    // A failed lookup reads as "signed out" below and clears the auth cookies.
+    // "Couldn't tell" is not "signed out": the database being briefly
+    // unreachable must not cost a visitor their valid session, so leave the
+    // cookies alone and let the page render.
     logger.warn("Session lookup failed in proxy", {
       error: error.message,
       status: error.status,
       path: pathname,
     });
+    return NextResponse.next();
   }
 
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));

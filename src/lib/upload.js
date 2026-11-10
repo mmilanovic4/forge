@@ -1,7 +1,10 @@
 import "server-only";
 
+import sharp from "sharp";
+
 import { organizationsEnabled } from "./app-config";
 import { db } from "./db";
+import { UserError } from "./errors";
 import { avatarPrefix, FILES_URL_PREFIX } from "./files";
 import { logger } from "./logger";
 import { storage } from "./storage";
@@ -34,33 +37,91 @@ function detectImageType(buffer) {
   return null;
 }
 
+// Longest edge of a stored avatar, in pixels. The largest one on screen is
+// 40px, so this leaves plenty for high-density displays.
+const AVATAR_MAX_EDGE = 512;
+
+// Decoding is where an image costs memory, whatever its size on disk — a few
+// kilobytes can declare a canvas of gigabytes. Counted across all frames of an
+// animation.
+const AVATAR_MAX_PIXELS = 100_000_000;
+
+/**
+ * Re-encodes an uploaded avatar, for use as uploadFile's `transform`.
+ *
+ * What a camera writes into a photo — GPS position, device, timestamps — would
+ * otherwise be served to everyone who can see the avatar. sharp carries no
+ * metadata over unless asked to, so re-encoding is what removes it;
+ * `autoOrient()` first bakes the EXIF rotation into the pixels, which would
+ * be lost along with the tag. The file that gets stored is also one this
+ * server produced, not the bytes that were sent.
+ */
+export async function normalizeAvatar(buffer) {
+  try {
+    const output = await sharp(buffer, {
+      animated: true,
+      limitInputPixels: AVATAR_MAX_PIXELS,
+    })
+      .autoOrient()
+      .resize({
+        width: AVATAR_MAX_EDGE,
+        height: AVATAR_MAX_EDGE,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 85 })
+      .toBuffer();
+
+    return { buffer: output, contentType: "image/webp" };
+  } catch (err) {
+    throw new UserError("That image could not be read. Try another file.", {
+      cause: err,
+    });
+  }
+}
+
+/**
+ * Validates and stores an uploaded file. `transform` gets the bytes and the
+ * detected type once those checks have passed, and returns what to store in
+ * their place. Rejections are UserErrors: their messages are meant for the
+ * person uploading.
+ */
 export async function uploadFile(
   file,
-  { prefix = "uploads", allowedTypes, maxSize = 10 * 1024 * 1024 } = {},
+  {
+    prefix = "uploads",
+    allowedTypes,
+    maxSize = 10 * 1024 * 1024,
+    transform,
+  } = {},
 ) {
   if (!file || typeof file.arrayBuffer !== "function") {
-    throw new Error("No file provided.");
+    throw new UserError("No file provided.");
   }
   if (file.size === 0) {
-    throw new Error("File is empty.");
+    throw new UserError("File is empty.");
   }
   if (file.size > maxSize) {
-    throw new Error(
+    throw new UserError(
       `File is too large (max ${Math.round(maxSize / 1024 / 1024)}MB).`,
     );
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
   // Anything that claims to be an image has to actually be one.
-  const contentType =
-    detectImageType(buffer) ??
+  const detectedType =
+    detectImageType(original) ??
     (IMAGE_TYPES.includes(file.type)
       ? null
       : file.type || "application/octet-stream");
 
-  if (!contentType || (allowedTypes && !allowedTypes.includes(contentType))) {
-    throw new Error("Unsupported file type.");
+  if (!detectedType || (allowedTypes && !allowedTypes.includes(detectedType))) {
+    throw new UserError("Unsupported file type.");
   }
+
+  const { buffer, contentType } = transform
+    ? await transform(original, detectedType)
+    : { buffer: original, contentType: detectedType };
 
   const ext = EXT_BY_TYPE[contentType] ?? "bin";
   const key = `${prefix}/${crypto.randomUUID()}.${ext}`;
@@ -72,10 +133,10 @@ export async function uploadFile(
       err,
       key,
       contentType,
-      size: file.size,
+      size: buffer.length,
     });
     // Callers surface this message to the user, so keep storage internals out.
-    throw new Error("Upload failed. Please try again.", { cause: err });
+    throw new UserError("Upload failed. Please try again.", { cause: err });
   }
 
   return { key, contentType };

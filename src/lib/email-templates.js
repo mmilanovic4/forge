@@ -87,6 +87,21 @@ export const verifyEmailTpl = ({ firstName, url }) =>
     <p style="font-size:12px;color:#999;margin:0;">If you didn't create an account, you can ignore this email.</p>
   </td></tr>`);
 
+export const deleteAccountEmailTpl = ({ firstName, url }) =>
+  wrapper(`
+  <tr><td style="padding:32px 0 16px;">
+    <p style="font-size:20px;font-weight:600;margin:0;">Delete your account</p>
+  </td></tr>
+  <tr><td style="padding:0 0 16px;">
+    <p style="font-size:14px;margin:0;color:#555;">${opening(firstName, "click the button below to permanently delete your account and all associated data. This cannot be undone. The link expires in 1 hour, and only works in the browser you are signed in with.")}</p>
+  </td></tr>
+  <tr><td style="padding:0 0 32px;">
+    ${button(url, "Delete my account")}
+  </td></tr>
+  <tr><td>
+    <p style="font-size:12px;color:#999;margin:0;">If you didn't ask for this, ignore this email — nothing is deleted unless the link is opened — and change your password, since someone else may be signed in to your account.</p>
+  </td></tr>`);
+
 export const invitationEmailTpl = ({ organizationName, inviterName, url }) => {
   const organization = escapeHtml(organizationName);
   const inviter = escapeHtml(inviterName);

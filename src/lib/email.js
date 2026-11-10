@@ -5,11 +5,27 @@ import nodemailer from "nodemailer";
 import { emailEnabled } from "./auth-config";
 import { logger } from "./logger";
 
+const port = Number(process.env.SMTP_PORT) || 587;
+
+// 465 is implicit TLS: encrypted from the first byte. Every other port starts
+// in plain text and upgrades with STARTTLS — which nodemailer only attempts,
+// carrying on unencrypted if the server (or someone in between) doesn't offer
+// it. Reset links and login codes travel this way, so production insists on
+// the upgrade. SMTP_REQUIRE_TLS=false is the way out for a relay on a trusted
+// network that has no TLS; development defaults to it for Mailpit.
+const secure = port === 465;
+const requireTLS =
+  !secure &&
+  (process.env.SMTP_REQUIRE_TLS
+    ? process.env.SMTP_REQUIRE_TLS !== "false"
+    : process.env.NODE_ENV === "production");
+
 const transporter = emailEnabled
   ? nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false,
+      port,
+      secure,
+      requireTLS,
       auth:
         process.env.SMTP_USER && process.env.SMTP_PASS
           ? {

@@ -11,6 +11,13 @@ export function getInitials({ firstName, lastName, name } = {}) {
   return (fromFields || name?.[0] || "").toUpperCase();
 }
 
+// The global (admin plugin) role, not an organization one. better-auth stores
+// several roles as a comma-separated string, so compare entries rather than
+// the whole value.
+export function isAdmin(user) {
+  return !!user?.role?.split(",").includes("admin");
+}
+
 const NEW_ACCOUNT_WINDOW_MS = 60 * 60 * 1000;
 
 // Whether the account was created within the last hour — straight after

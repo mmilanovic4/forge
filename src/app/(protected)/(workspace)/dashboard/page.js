@@ -14,7 +14,7 @@ import {
 import { auth } from "@/lib/auth";
 import { activeProviders, emailEnabled } from "@/lib/auth-config";
 import { getSession } from "@/lib/session";
-import { isNewAccount } from "@/lib/user";
+import { isAdmin, isNewAccount } from "@/lib/user";
 
 import { SecurityChecklist } from "./security-checklist";
 import { StatCards } from "./stat-cards";
@@ -58,7 +58,7 @@ export default async function Dashboard() {
 
       <StatCards />
 
-      {user.role === "admin" && (
+      {isAdmin(user) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

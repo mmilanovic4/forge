@@ -72,6 +72,13 @@ export function SecurityChecklist({
     (passkeyCount > 0 ? 1 : 0) +
     (socialAccounts.length > 0 ? 1 : 0);
 
+  // Two-factor is only asked for after a password. Saying so beats a green
+  // tick that reads as "every way into this account is covered".
+  const skipsTwoFactor = [
+    passkeyCount > 0 && "passkey",
+    socialAccounts.length > 0 && "social",
+  ].filter(Boolean);
+
   // Only suggest what this deployment actually offers — social sign-in is
   // opt-in, so the passkey may be the sole alternative.
   const suggestions = [
@@ -156,7 +163,9 @@ export function SecurityChecklist({
               label="Two-factor authentication"
               detail={
                 twoFactorEnabled
-                  ? "Enabled with an authenticator app"
+                  ? skipsTwoFactor.length > 0
+                    ? `On for password sign-in — ${skipsTwoFactor.join(" and ")} sign-in skips it`
+                    : "Enabled with an authenticator app"
                   : hasPassword
                     ? "Not enabled"
                     : "Needs a password first"

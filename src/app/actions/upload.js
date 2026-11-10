@@ -3,9 +3,15 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { publicMessage } from "@/lib/errors";
 import { avatarPrefix, FILES_URL_PREFIX } from "@/lib/files";
 import { getSession } from "@/lib/session";
-import { IMAGE_TYPES, removeAvatarFile, uploadFile } from "@/lib/upload";
+import {
+  IMAGE_TYPES,
+  normalizeAvatar,
+  removeAvatarFile,
+  uploadFile,
+} from "@/lib/upload";
 
 // Upload and swap in one step, so the avatar it replaces can be deleted — done
 // from the client, the old object was simply left behind in the bucket.
@@ -24,10 +30,11 @@ export async function uploadAvatarAction(_, formData) {
       prefix: avatarPrefix(userId),
       allowedTypes: IMAGE_TYPES,
       maxSize: 5 * 1024 * 1024,
+      transform: normalizeAvatar,
     });
     url = `${FILES_URL_PREFIX}${key}`;
   } catch (err) {
-    return { error: err.message ?? "Upload failed." };
+    return { error: publicMessage(err, "Upload failed.") };
   }
 
   try {
@@ -35,7 +42,7 @@ export async function uploadAvatarAction(_, formData) {
   } catch (err) {
     // Nothing points at the new file, so don't keep it.
     await removeAvatarFile(userId, url);
-    return { error: err.message ?? "Could not update avatar." };
+    return { error: publicMessage(err, "Could not update avatar.") };
   }
 
   await removeAvatarFile(userId, previous);
@@ -56,7 +63,7 @@ export async function removeAvatarAction() {
   try {
     await auth.api.updateUser({ body: { image: null }, headers: hdrs });
   } catch (err) {
-    return { error: err.message ?? "Could not remove avatar." };
+    return { error: publicMessage(err, "Could not remove avatar.") };
   }
 
   await removeAvatarFile(userId, image);
