@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 
 import { passwordLogin } from "@/lib/app-config";
 import { auth } from "@/lib/auth";
+import { publicMessage } from "@/lib/errors";
 
 // For accounts created without a password (social sign-up): better-auth only
 // exposes setPassword on the server, since it needs no current password.
@@ -19,7 +20,7 @@ export async function setPasswordAction(newPassword) {
       headers: await headers(),
     });
   } catch (err) {
-    return { error: err.message ?? "Something went wrong. Please try again." };
+    return { error: publicMessage(err) };
   }
 
   return { ok: true };
