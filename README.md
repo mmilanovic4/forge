@@ -86,6 +86,8 @@ Mailpit web UI is available at [http://localhost:8025](http://localhost:8025).
 | `SMTP_USER`                 |          | SMTP username                                      |
 | `SMTP_PASS`                 |          | SMTP password                                      |
 | `SMTP_FROM`                 |          | From email address                                 |
+| `SMTP_REQUIRE_TLS`          |          | Set to `false` to allow unencrypted SMTP           |
+| `TRUSTED_PROXIES`           |          | Reverse proxy IPs / CIDR ranges, comma-separated   |
 | `NEXT_PUBLIC_AUTH_METHOD`   |          | Login method [`otp`, `magic-link`]                 |
 | `NEXT_PUBLIC_ORGANIZATIONS` |          | Set to `true` to enable organizations              |
 | `DISCORD_CLIENT_ID`         |          | Discord OAuth app client ID                        |
@@ -128,7 +130,7 @@ There are two ways to sign in with a passkey on the login screen, both of which 
 A few things to know:
 
 - WebAuthn requires a **secure context**. In production the app must be served over HTTPS; `localhost` is exempt for local development.
-- Passkey sign-in is a passwordless (non-credential) path, so it is **not** gated by the two-factor challenge by default — a passkey login completes in one step.
+- Passkey sign-in is a passwordless (non-credential) path, so it is **not** gated by the two-factor challenge by default — a passkey login completes in one step. The same goes for social sign-in: two-factor is only asked for after a password.
 
 ## Organizations
 
@@ -150,6 +152,16 @@ Forge uses two roles managed via [Better Auth](https://www.better-auth.com/)'s a
 | `admin` | Full access to the admin panel and user management (`/users`) |
 
 Admins can manage other users (ban, unban, change roles, delete) from the `/users` page. An admin cannot ban or delete their own account.
+
+Who else can open `/users` depends on organizations. With them enabled, members see the list of their active organization — read-only, and nothing outside it. Without them the list is every account in the app, so everyone but admins gets a 404.
+
+## Security
+
+- **Headers** — `next.config.mjs` sends a Content-Security-Policy on every response, along with `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and, in production, `Strict-Transport-Security`. The policy allows inline scripts (Next.js needs them without nonces) but nothing from another origin — loading a third-party script, font or image means adding its origin there.
+- **Rate limiting** — better-auth's limiter runs in production and keeps its counters in the `rateLimit` table, so they hold across instances. It keys on the client IP: behind more than one reverse proxy, set `TRUSTED_PROXIES` so the address can be read from `X-Forwarded-For`.
+- **Email transport** — port 465 uses implicit TLS; any other port must upgrade with STARTTLS in production, or the message is not sent. Set `SMTP_REQUIRE_TLS=false` only for a relay on a trusted network that offers no TLS.
+- **Deleting an account** — needs more than a session. With SMTP configured a confirmation link is emailed and the account is deleted when it is opened; without it the password is asked for again.
+- **Avatars** — re-encoded on upload (WebP, at most 512px), which strips EXIF data such as GPS position.
 
 ## Social Auth
 
