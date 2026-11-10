@@ -129,7 +129,7 @@ export function TwoFactor({ initialEnabled, hasPassword }) {
           <CardTitle>Two-factor authentication</CardTitle>
           <CardDescription>
             {hasPassword
-              ? "Add an extra layer of security by requiring a code from your authenticator app each time you sign in."
+              ? "Add an extra layer of security by requiring a code from your authenticator app each time you sign in with your password."
               : "Two-factor authentication protects password sign-in, so set a password first."}
           </CardDescription>
         </CardHeader>
@@ -273,6 +273,10 @@ export function TwoFactor({ initialEnabled, hasPassword }) {
     <Card className="col-span-2 md:col-span-1">
       <CardHeader>
         <CardTitle>Two-factor authentication</CardTitle>
+        <CardDescription>
+          Asked for when you sign in with your password. Passkey and social
+          sign-in rely on their own protection and skip it.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-3">
