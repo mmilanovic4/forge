@@ -13,23 +13,33 @@ import {
 } from "@/components/ui/alert-dialog";
 
 /**
- * Wraps a trigger button so a destructive action asks first.
+ * Asks before an action runs. Either wraps the button that triggers it:
  *
  *   <ConfirmAction title="Remove member?" confirmLabel="Remove" onConfirm={…}>
  *     <Button variant="ghost">Remove</Button>
  *   </ConfirmAction>
+ *
+ * or, with no children, is opened from outside through `open` and
+ * `onOpenChange` — which is what a dropdown menu item needs, since the menu
+ * unmounts a trigger rendered inside it as soon as it closes.
+ *
+ * `variant` styles the confirm button; pass "default" when the action isn't
+ * destructive.
  */
 export function ConfirmAction({
   title,
   description,
   confirmLabel,
   cancelLabel = "Cancel",
+  variant = "destructive",
   onConfirm,
+  open,
+  onOpenChange,
   children,
 }) {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {children && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -39,7 +49,7 @@ export function ConfirmAction({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+          <AlertDialogAction variant={variant} onClick={onConfirm}>
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
