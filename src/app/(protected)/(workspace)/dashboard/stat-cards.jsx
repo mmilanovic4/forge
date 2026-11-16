@@ -9,6 +9,27 @@ import {
 } from "@/components/ui/card";
 import { organizationsEnabled } from "@/lib/app-config";
 import { getUserStats } from "@/lib/data-helper";
+import { getOrganizationStats } from "@/lib/organization/queries";
+
+// The same three numbers either way: about the active organization, or about
+// the whole app when it has no organizations.
+const COPY = organizationsEnabled
+  ? {
+      total: ["Members", "In this organization"],
+      activeSessions: ["Active sessions", "Signed in to this organization"],
+      recent: ["New this week", "Joined in the last 7 days"],
+    }
+  : {
+      total: ["Current users", "Registered accounts"],
+      activeSessions: ["Active sessions", "Signed-in devices"],
+      recent: ["New this week", "Signed up in the last 7 days"],
+    };
+
+const ICONS = {
+  total: Users,
+  activeSessions: MonitorSmartphone,
+  recent: UserPlus,
+};
 
 function StatCard({ icon: Icon, label, value, detail }) {
   return (
@@ -30,34 +51,21 @@ function StatCard({ icon: Icon, label, value, detail }) {
 }
 
 export async function StatCards() {
-  const { totalUsers, activeSessions, newUsers } = await getUserStats();
+  const stats = await (organizationsEnabled
+    ? getOrganizationStats()
+    : getUserStats());
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <StatCard
-        icon={Users}
-        label={organizationsEnabled ? "Members" : "Current users"}
-        value={totalUsers}
-        detail={
-          organizationsEnabled ? "In this organization" : "Registered accounts"
-        }
-      />
-      <StatCard
-        icon={MonitorSmartphone}
-        label="Active sessions"
-        value={activeSessions}
-        detail="Signed-in devices"
-      />
-      <StatCard
-        icon={UserPlus}
-        label="New this week"
-        value={newUsers}
-        detail={
-          organizationsEnabled
-            ? "Joined in the last 7 days"
-            : "Signed up in the last 7 days"
-        }
-      />
+      {Object.entries(COPY).map(([key, [label, detail]]) => (
+        <StatCard
+          key={key}
+          icon={ICONS[key]}
+          label={label}
+          value={stats[key]}
+          detail={detail}
+        />
+      ))}
     </div>
   );
 }

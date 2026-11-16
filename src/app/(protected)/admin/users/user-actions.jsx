@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -24,65 +22,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAction } from "@/hooks/use-action";
 import { authClient } from "@/lib/auth-client";
 import { isAdmin } from "@/lib/user";
 
 export function UserActions({ user, currentUserId }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { pending, run } = useAction();
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [removeAdminDialogOpen, setRemoveAdminDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const isSelf = user.id === currentUserId;
+  const userId = user.id;
 
-  async function handleBan() {
-    setLoading(true);
-    const { error } = await authClient.admin.banUser({ userId: user.id });
-    if (error) {
-      toast.error(error.message ?? "Something went wrong.");
-    } else {
-      toast.success("User banned.");
-      router.refresh();
-    }
-    setLoading(false);
-  }
+  const handleBan = () =>
+    run("ban", () => authClient.admin.banUser({ userId }), {
+      success: "User banned.",
+    });
 
-  async function handleUnban() {
-    setLoading(true);
-    const { error } = await authClient.admin.unbanUser({ userId: user.id });
-    if (error) {
-      toast.error(error.message ?? "Something went wrong.");
-    } else {
-      toast.success("User unbanned.");
-      router.refresh();
-    }
-    setLoading(false);
-  }
+  const handleUnban = () =>
+    run("unban", () => authClient.admin.unbanUser({ userId }), {
+      success: "User unbanned.",
+    });
 
-  async function handleSetRole(role) {
-    setLoading(true);
-    const { error } = await authClient.admin.setRole({ userId: user.id, role });
-    if (error) {
-      toast.error(error.message ?? "Something went wrong.");
-    } else {
-      toast.success(`Role set to ${role}.`);
-      router.refresh();
-    }
-    setLoading(false);
-  }
+  const handleSetRole = (role) =>
+    run("role", () => authClient.admin.setRole({ userId, role }), {
+      success: `Role set to ${role}.`,
+    });
 
-  async function handleDelete() {
-    setLoading(true);
-    const { error } = await authClient.admin.removeUser({ userId: user.id });
-    if (error) {
-      toast.error(error.message ?? "Something went wrong.");
-    } else {
-      toast.success("User deleted.");
-      router.refresh();
-    }
-    setLoading(false);
-  }
+  const handleDelete = () =>
+    run("delete", () => authClient.admin.removeUser({ userId }), {
+      success: "User deleted.",
+    });
 
   return (
     <>
@@ -92,7 +63,7 @@ export function UserActions({ user, currentUserId }) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            disabled={loading}
+            disabled={pending !== null}
           >
             <MoreHorizontal className="h-4 w-4" />
             <span className="sr-only">Open actions</span>

@@ -30,7 +30,7 @@ export function SearchInput({ defaultValue = "", limit }) {
       if (next) params.set("search", next);
       else params.delete("search");
       // replace(): a debounced keystroke shouldn't be its own history entry.
-      router.replace(`/users?${params.toString()}`, { scroll: false });
+      router.replace(`/admin/users?${params.toString()}`, { scroll: false });
     }, 300);
   }
 

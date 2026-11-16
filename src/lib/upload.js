@@ -8,6 +8,7 @@ import { UserError } from "./errors";
 import { avatarPrefix, FILES_URL_PREFIX } from "./files";
 import { logger } from "./logger";
 import { storage } from "./storage";
+import { isAdmin } from "./user";
 
 const EXT_BY_TYPE = {
   "image/jpeg": "jpg",
@@ -162,22 +163,25 @@ export async function removeAvatarFile(userId, imageUrl) {
 }
 
 /**
- * Whether `userId` may read the object at `key`. Avatars are visible to their
+ * Whether `user` may read the object at `key`. Avatars are visible to their
  * owner and to anyone who can see the owner elsewhere in the app: everyone
- * when the app is single-tenant, otherwise members of a shared organization.
- * Keys outside a known layout are refused.
+ * when the app is single-tenant, otherwise members of a shared organization
+ * and admins, whose user list spans all of them. Keys outside a known layout
+ * are refused.
  */
-export async function canReadFile(userId, key) {
+export async function canReadFile(user, key) {
   const [, ownerId, name, ...rest] = key.split("/");
   if (!ownerId || !name || rest.length) return false;
   if (!key.startsWith(`${avatarPrefix(ownerId)}/`)) return false;
 
-  if (ownerId === userId || !organizationsEnabled) return true;
+  if (ownerId === user.id || !organizationsEnabled || isAdmin(user)) {
+    return true;
+  }
 
   const shared = await db.member.findFirst({
     where: {
       userId: ownerId,
-      organization: { members: { some: { userId } } },
+      organization: { members: { some: { userId: user.id } } },
     },
     select: { id: true },
   });

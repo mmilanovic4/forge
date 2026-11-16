@@ -18,7 +18,7 @@ export async function GET(_, ctx) {
 
   // 404 rather than 403, so a key outside the caller's reach can't be told
   // apart from one that doesn't exist.
-  if (!(await canReadFile(session.user.id, path))) {
+  if (!(await canReadFile(session.user, path))) {
     return notFound();
   }
 

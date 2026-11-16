@@ -10,11 +10,9 @@ import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { magicLink } from "better-auth/plugins/magic-link";
-import { organization } from "better-auth/plugins/organization";
 import { twoFactor } from "better-auth/plugins/two-factor";
 
 import {
-  appName,
   authMethod,
   cookiePrefix,
   MIN_PASSWORD_LENGTH,
@@ -26,7 +24,6 @@ import { db } from "./db";
 import { queueEmail } from "./email";
 import {
   deleteAccountEmailTpl,
-  invitationEmailTpl,
   loginCodeEmailTpl,
   magicLinkEmailTpl,
   resetPasswordEmailTpl,
@@ -38,7 +35,8 @@ import {
   assertNoOrphanedOrganizations,
   defaultOrganizationId,
   deleteSoloOrganizations,
-} from "./organization";
+} from "./organization/lifecycle";
+import { organizationPlugin } from "./organization/plugin";
 import { isAdmin } from "./user";
 
 // firstName is optional (GitHub never sends one), so fall back to the first
@@ -98,30 +96,7 @@ if (emailEnabled && authMethod === "otp") {
 }
 
 if (organizationsEnabled) {
-  conditionalPlugins.push(
-    organization({
-      // Without SMTP nobody can verify an address, so requiring it would make
-      // invitations impossible to accept.
-      requireEmailVerificationOnInvitation: emailEnabled,
-      // Without SMTP the inviter shares the link from the settings page.
-      sendInvitationEmail: emailEnabled
-        ? ({ id, email, organization, inviter }) => {
-            queueEmail({
-              to: email,
-              subject: `Join ${organization.name} on ${appName}`,
-              html: invitationEmailTpl({
-                organizationName: organization.name,
-                inviterName: inviter.user.name,
-                url: new URL(
-                  `/accept-invitation/${id}`,
-                  process.env.BETTER_AUTH_URL,
-                ).toString(),
-              }),
-            });
-          }
-        : undefined,
-    }),
-  );
+  conditionalPlugins.push(organizationPlugin());
 }
 
 export const auth = betterAuth({
@@ -184,9 +159,7 @@ export const auth = betterAuth({
       delete: {
         // Only cleanup here — the ownership check has to run earlier, see
         // assertNoOrphanedOrganizations.
-        before: organizationsEnabled
-          ? (user) => deleteSoloOrganizations(user.id)
-          : undefined,
+        before: (user) => deleteSoloOrganizations(user.id),
         // Covers self-deletion and the admin plugin's removeUser alike. The
         // storage client is loaded only here, so everything else importing
         // this file — proxy.js included — doesn't pull it in.
@@ -262,9 +235,7 @@ export const auth = betterAuth({
           }
         : undefined,
       deleteTokenExpiresIn: DELETE_ACCOUNT_LINK_TTL,
-      beforeDelete: organizationsEnabled
-        ? (user) => assertNoOrphanedOrganizations(user.id)
-        : undefined,
+      beforeDelete: (user) => assertNoOrphanedOrganizations(user.id),
     },
   },
   emailAndPassword: {
@@ -332,9 +303,7 @@ export const auth = betterAuth({
         if (session) {
           // The endpoint runs this too, but only once the emailed link is
           // opened — say so now rather than after sending it.
-          if (organizationsEnabled) {
-            await assertNoOrphanedOrganizations(session.user.id);
-          }
+          await assertNoOrphanedOrganizations(session.user.id);
 
           // No email to confirm through, so the password stands in for it.
           // Accounts without one (social, passkey) fall back to better-auth's

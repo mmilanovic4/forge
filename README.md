@@ -134,26 +134,38 @@ A few things to know:
 
 ## Organizations
 
-Setting `NEXT_PUBLIC_ORGANIZATIONS=true` turns on Better Auth's organization plugin and makes membership **mandatory**: every signed-in user works inside an active organization. A user without one is sent to `/onboarding` from every page except **Settings**, so they can still manage or delete their account.
+Setting `NEXT_PUBLIC_ORGANIZATIONS=true` turns on Better Auth's organization plugin and makes membership **mandatory**: every signed-in user works inside an active organization. A user without one is sent to `/onboarding` from every page except **Settings** and, for admins, user management, so they can still manage or delete their account.
 
-- **Joining** — onboarding lists the user's pending invitations; otherwise they create an organization (a name is suggested) and become its owner. This happens after sign-in rather than at sign-up, so it works the same for every sign-in method, and existing accounts are onboarded on their next visit.
-- **Invitations** — owners and admins invite people from **Settings → Organization**. The email links to `/accept-invitation/<id>`, which walks invitees without an account through sign-up with the address prefilled and brings them back to accept. Without SMTP, the invitation link is copied to the clipboard to share by hand.
-- **Scope** — `/users` and the dashboard stats only cover the active organization. Users switch between their organizations from the header.
-- **Roles** — organization roles (`owner`, `admin`, `member`) are separate from the global roles below.
-- **Deleting an account** — organizations the user is alone in are deleted with it. If they are the last owner of an organization that still has members, deletion is blocked until ownership moves to someone else.
+The app then has three levels, each with its own place:
+
+| Level        | Where                                | What                                                    |
+| ------------ | ------------------------------------ | ------------------------------------------------------- |
+| Account      | `/settings` (avatar menu)            | Profile, security, sessions, deleting the account       |
+| Organization | `/organization` (switcher in header) | Members and invitations, name, leaving, deleting        |
+| App          | `/admin/users` (admins only)         | Every account: roles, bans, deletion — see [User Roles] |
+
+- **Joining** — onboarding lists the user's pending invitations; otherwise they create an organization and become its owner. This happens after sign-in rather than at sign-up, so it works the same for every sign-in method, and existing accounts are onboarded on their next visit.
+- **Switching** — the switcher next to the logo names the active organization and leads to its pages, to the user's other organizations, to **New organization**, and to invitations still waiting for an answer.
+- **Invitations** — owners and admins invite people from **Organization → Members**, where pending invitations sit in the same list as members. The email links to `/accept-invitation/<id>`, which walks invitees without an account through sign-up with the address prefilled and brings them back to accept. Without SMTP, the invitation link is copied to the clipboard to share by hand.
+- **Roles** — organization roles (`owner`, `admin`, `member`) are separate from the global roles below. Owners and admins manage members; only an owner can make another owner, touch one, or delete the organization. The UI reads these rules from the plugin's own role definitions (`src/lib/organization/permissions.js`), and the server enforces them on every call.
+- **Ownership** — an organization always keeps an owner. The last one can't leave or step down until they make someone else an owner, from that member's menu.
+- **Scope** — the dashboard stats and the members list only cover the active organization. Nobody but an admin sees accounts outside their own organizations.
+- **Deleting an account** — organizations the user is alone in are deleted with it. If they are the last owner of an organization that still has members, deletion is blocked until someone else is made an owner.
+
+Organization code lives in `src/lib/organization/`: `queries.js` (what pages read), `permissions.js` (who may do what), `lifecycle.js` (what happens to organizations as accounts sign in and are deleted) and `plugin.js` (the Better Auth plugin's configuration).
+
+[User Roles]: #user-roles
 
 ## User Roles
 
 Forge uses two roles managed via [Better Auth](https://www.better-auth.com/)'s admin plugin:
 
-| Role    | Description                                                   |
-| ------- | ------------------------------------------------------------- |
-| `user`  | Default role assigned on registration                         |
-| `admin` | Full access to the admin panel and user management (`/users`) |
+| Role    | Description                                |
+| ------- | ------------------------------------------ |
+| `user`  | Default role assigned on registration      |
+| `admin` | Access to user management (`/admin/users`) |
 
-Admins can manage other users (ban, unban, change roles, delete) from the `/users` page. An admin cannot ban or delete their own account.
-
-Who else can open `/users` depends on organizations. With them enabled, members see the list of their active organization — read-only, and nothing outside it. Without them the list is every account in the app, so everyone but admins gets a 404.
+Admins can manage other users (ban, unban, change roles, delete) from the `/admin/users` page, which lists every account in the app — with organizations enabled, across all of them. An admin cannot ban or delete their own account. Everyone else gets a 404 there.
 
 ## Security
 

@@ -4,10 +4,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
-import { organizationsEnabled } from "./app-config";
 import { auth } from "./auth";
-import { db } from "./db";
-import { defaultOrganizationId } from "./organization";
 import { isAdmin } from "./user";
 
 // Deduped per request, so a page and the queries it triggers share one lookup
@@ -40,66 +37,4 @@ export async function requireAdmin() {
   }
 
   return session;
-}
-
-// Who may open the user list. With organizations on it only ever holds the
-// members of the caller's active organization — people they already see under
-// Settings → Organization. Without them it is every account in the app, email
-// addresses included, and anyone can sign up: admins only.
-export async function requireUserListAccess() {
-  return organizationsEnabled ? requireSession() : requireAdmin();
-}
-
-/**
- * The caller's active organization and their membership in it, or `null` when
- * they belong to none or organizations are switched off.
- *
- * The session's activeOrganizationId is only a hint: it can point at an
- * organization the user has since left, been removed from, or that was
- * deleted. Membership is re-checked here, and a stale value is replaced.
- */
-export const getActiveOrganization = cache(async () => {
-  const session = await requireSession();
-
-  if (!organizationsEnabled) return null;
-
-  const userId = session.user.id;
-  const findMember = (organizationId) =>
-    organizationId &&
-    db.member.findUnique({
-      where: { organizationId_userId: { organizationId, userId } },
-      include: { organization: true },
-    });
-
-  let member = await findMember(session.session.activeOrganizationId);
-
-  if (!member) {
-    const organizationId = await defaultOrganizationId(userId);
-    if (!organizationId) return null;
-
-    member = await findMember(organizationId);
-    await db.session.update({
-      where: { id: session.session.id },
-      data: { activeOrganizationId: organizationId },
-    });
-  }
-
-  const { organization, ...membership } = member;
-  return { organization, member: membership };
-});
-
-/**
- * Same as getActiveOrganization, but users without an organization are sent to
- * onboarding — this is the gate that makes membership mandatory for anything
- * organization-scoped. Their own account stays reachable, so it isn't applied
- * to settings.
- */
-export async function requireActiveOrganization() {
-  const scope = await getActiveOrganization();
-
-  if (organizationsEnabled && !scope) {
-    redirect("/onboarding");
-  }
-
-  return scope;
 }

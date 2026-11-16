@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/card";
 import { organizationsEnabled } from "@/lib/app-config";
 import { db } from "@/lib/db";
+import { invitationPath } from "@/lib/organization/invitation";
+import { getPendingInvitation } from "@/lib/organization/queries";
 import { getSession } from "@/lib/session";
 
 import { InvitationActions, SignOutButton } from "./invitation-actions";
@@ -25,28 +27,12 @@ export default async function AcceptInvitation({ params }) {
 
   const { id } = await params;
 
-  // Read directly rather than through auth.api.getInvitation, which needs a
-  // session — this page also has to greet invitees who have no account yet.
-  // The id is an unguessable random string, so it doubles as the credential.
   const [session, invitation] = await Promise.all([
     getSession(),
-    db.invitation.findUnique({
-      where: { id },
-      select: {
-        email: true,
-        role: true,
-        status: true,
-        expiresAt: true,
-        organization: { select: { name: true } },
-        user: { select: { name: true } },
-      },
-    }),
+    getPendingInvitation(id),
   ]);
 
-  const valid =
-    invitation?.status === "pending" && invitation.expiresAt > new Date();
-
-  if (!valid) {
+  if (!invitation) {
     return (
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -67,7 +53,7 @@ export default async function AcceptInvitation({ params }) {
     );
   }
 
-  const here = `/accept-invitation/${id}`;
+  const here = invitationPath(id);
   // The link already names the address, so saying whether it has an account
   // reveals nothing new to whoever holds it — and saves the invitee guessing
   // between "Sign in" and "Create account". better-auth stores emails
@@ -90,8 +76,8 @@ export default async function AcceptInvitation({ params }) {
       <CardHeader>
         <CardTitle>Join {invitation.organization.name}</CardTitle>
         <CardDescription>
-          {invitation.user.name} invited <strong>{invitation.email}</strong> to
-          join as {invitation.role ?? "member"}.
+          {invitation.inviter.name} invited <strong>{invitation.email}</strong>{" "}
+          to join as {invitation.role ?? "member"}.
         </CardDescription>
       </CardHeader>
       {!session && (

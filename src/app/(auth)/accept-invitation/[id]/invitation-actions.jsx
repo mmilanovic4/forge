@@ -1,31 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useAction } from "@/hooks/use-action";
 import { authClient } from "@/lib/auth-client";
 
 export function InvitationActions({ invitationId }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(null);
+  const { pending, run } = useAction();
 
-  async function run(key, action) {
-    setPending(key);
-    const { error } = await action({ invitationId });
-
-    if (error) {
-      toast.error(error.message ?? "Something went wrong. Please try again.");
-      setPending(null);
-      return;
-    }
-
-    // Accepting makes the organization active; declining leaves the protected
-    // layout to pick another one or fall through to onboarding.
-    router.push("/dashboard");
-  }
+  // Accepting makes the organization active; declining leaves the workspace
+  // layout to pick another one or fall through to onboarding.
+  const answer = (key, action) =>
+    run(key, () => action({ invitationId }), { redirectTo: "/dashboard" });
 
   return (
     <div className="flex w-full gap-2">
@@ -34,9 +21,7 @@ export function InvitationActions({ invitationId }) {
         className="flex-1"
         disabled={pending !== null}
         onClick={() =>
-          run("reject", (body) =>
-            authClient.organization.rejectInvitation(body),
-          )
+          answer("reject", authClient.organization.rejectInvitation)
         }
       >
         {pending === "reject" ? "Declining..." : "Decline"}
@@ -45,9 +30,7 @@ export function InvitationActions({ invitationId }) {
         className="flex-1"
         disabled={pending !== null}
         onClick={() =>
-          run("accept", (body) =>
-            authClient.organization.acceptInvitation(body),
-          )
+          answer("accept", authClient.organization.acceptInvitation)
         }
       >
         {pending === "accept" ? "Joining..." : "Accept invitation"}

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { organizationsEnabled } from "@/lib/app-config";
 import { listUsers } from "@/lib/data-helper";
-import { requireUserListAccess } from "@/lib/session";
+import { requireAdmin } from "@/lib/session";
 import { getInitials, isAdmin } from "@/lib/user";
 
 import { SearchInput } from "./search-input";
@@ -46,7 +46,7 @@ function buildUrl(query, page, limit, search) {
   params.set("limit", String(limit));
   if (search) params.set("search", search);
   else params.delete("search");
-  return `/users?${params.toString()}`;
+  return `/admin/users?${params.toString()}`;
 }
 
 function getPageNumbers(current, total) {
@@ -72,16 +72,26 @@ function Highlight({ text, query }) {
   );
 }
 
+// The first organization by name, the rest as a count: the column is there to
+// tell accounts apart at a glance, not to list every membership.
+function OrganizationNames({ organizations }) {
+  if (organizations.length === 0) return "—";
+  const [first, ...rest] = organizations;
+  return (
+    <span title={organizations.map((org) => org.name).join(", ")}>
+      {first.name}
+      {rest.length > 0 && ` +${rest.length}`}
+    </span>
+  );
+}
+
 async function UsersTable({ query, page, limit, search }) {
   const [session, firstTry] = await Promise.all([
-    requireUserListAccess(),
+    requireAdmin(),
     listUsers({ search, limit, offset: (page - 1) * limit }),
   ]);
 
-  // Everyone allowed in sees the list; only a global admin gets to act on it.
-  // The admin endpoints behind those actions check the same.
-  const canManage = isAdmin(session.user);
-  const columns = 5 + (organizationsEnabled ? 1 : 0) + (canManage ? 1 : 0);
+  const columns = organizationsEnabled ? 7 : 6;
   const currentUserId = session.user.id;
 
   const total = firstTry?.total ?? 0;
@@ -90,7 +100,7 @@ async function UsersTable({ query, page, limit, search }) {
   const skip = (safePage - 1) * limit;
 
   // The total is only known once the query ran, so a page past the end (a
-  // stale link, members removed since) costs a second query for the last one.
+  // stale link, accounts deleted since) costs a second query for the last one.
   const usersData =
     safePage === page
       ? firstTry
@@ -106,11 +116,11 @@ async function UsersTable({ query, page, limit, search }) {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
-            {organizationsEnabled && <TableHead>Org role</TableHead>}
-            <TableHead>{organizationsEnabled ? "App role" : "Role"}</TableHead>
+            {organizationsEnabled && <TableHead>Organizations</TableHead>}
+            <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Joined</TableHead>
-            {canManage && <TableHead />}
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -147,16 +157,8 @@ async function UsersTable({ query, page, limit, search }) {
                     {user.email}
                   </TableCell>
                   {organizationsEnabled && (
-                    <TableCell>
-                      <Badge
-                        variant={
-                          user.membership?.role === "owner"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {user.membership?.role}
-                      </Badge>
+                    <TableCell className="text-muted-foreground max-w-48 truncate">
+                      <OrganizationNames organizations={user.organizations} />
                     </TableCell>
                   )}
                   <TableCell>
@@ -176,11 +178,9 @@ async function UsersTable({ query, page, limit, search }) {
                       year: "numeric",
                     })}
                   </TableCell>
-                  {canManage && (
-                    <TableCell>
-                      <UserActions user={user} currentUserId={currentUserId} />
-                    </TableCell>
-                  )}
+                  <TableCell>
+                    <UserActions user={user} currentUserId={currentUserId} />
+                  </TableCell>
                 </TableRow>
               );
             })
@@ -260,7 +260,7 @@ export const metadata = {
 export default async function Users({ searchParams }) {
   // Before anything renders: the table's own check runs inside the Suspense
   // boundary, after the shell has already been sent.
-  await requireUserListAccess();
+  await requireAdmin();
 
   const query = await searchParams;
   const { page: pageParam, limit: limitParam, search: searchParam } = query;

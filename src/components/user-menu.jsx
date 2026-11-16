@@ -13,17 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { organizationsEnabled } from "@/lib/app-config";
 import { authClient } from "@/lib/auth-client";
 import { getInitials, isAdmin } from "@/lib/user";
 
-// /users lists the active organization's members — or, without organizations,
-// every account, which only admins may see. `noOrganization` hides the link
-// too, since it would only bounce the user back to onboarding. Settings stays:
-// it holds their account.
+// What belongs to the signed-in user: their account and, for admins, the
+// management of everyone else's. Anything about an organization is in the
+// organization switcher instead.
 export function UserMenu({
   user: { name, firstName, lastName, email, image, role },
-  noOrganization = false,
 }) {
   const router = useRouter();
 
@@ -60,9 +57,9 @@ export function UserMenu({
             Settings
           </Link>
         </DropdownMenuItem>
-        {(organizationsEnabled || isAdmin({ role })) && !noOrganization && (
+        {isAdmin({ role }) && (
           <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/users">
+            <Link href="/admin/users">
               <Users className="mr-2 h-4 w-4" />
               Users
             </Link>
