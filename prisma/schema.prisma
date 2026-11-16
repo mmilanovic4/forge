@@ -163,7 +163,7 @@ model Invitation {
   expiresAt      DateTime
   createdAt      DateTime     @default(now())
   inviterId      String
-  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
   @@index([email])

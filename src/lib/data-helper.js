@@ -1,31 +1,18 @@
 import "server-only";
 
+import { organizationsEnabled } from "./app-config";
 import { db } from "./db";
-import {
-  requireActiveOrganization,
-  requireSession,
-  requireUserListAccess,
-} from "./session";
+import { requireAdmin, requireSession } from "./session";
 
-// With organizations on, a user only ever sees the members of their active
-// organization. Without them the app is single-tenant, so everyone is visible.
-async function userScope() {
-  const scope = await requireActiveOrganization();
-  return scope
-    ? { members: { some: { organizationId: scope.organization.id } } }
-    : {};
-}
-
-// Scoped to the active organization, or — with no organizations to scope by —
-// kept to admins: the rows carry each account's email, role and ban status.
+// Every account in the app, for the admin's user management. The rows carry
+// each account's email, role and ban status, so admins only — what members may
+// see of one another is in lib/organization/queries.js.
 export async function listUsers({ search, limit, offset }) {
-  await requireUserListAccess();
+  await requireAdmin();
 
-  const scope = await requireActiveOrganization();
-  const where = {
-    ...(await userScope()),
-    ...(search && { name: { contains: search, mode: "insensitive" } }),
-  };
+  const where = search
+    ? { name: { contains: search, mode: "insensitive" } }
+    : {};
 
   const [users, total] = await Promise.all([
     db.user.findMany({
@@ -33,8 +20,7 @@ export async function listUsers({ search, limit, offset }) {
       where,
       take: limit,
       skip: offset,
-      // Only what the table shows: every other member can read this, so the
-      // row mustn't carry anything about how an account is secured.
+      // Only what the table shows.
       select: {
         id: true,
         name: true,
@@ -45,11 +31,10 @@ export async function listUsers({ search, limit, offset }) {
         role: true,
         banned: true,
         createdAt: true,
-        // The member row carries the organization role.
-        ...(scope && {
+        ...(organizationsEnabled && {
           members: {
-            where: { organizationId: scope.organization.id },
-            select: { role: true },
+            orderBy: { createdAt: "asc" },
+            select: { organization: { select: { id: true, name: true } } },
           },
         }),
       },
@@ -58,72 +43,27 @@ export async function listUsers({ search, limit, offset }) {
   ]);
 
   return {
-    users: users.map(({ members, ...user }) => ({
+    users: users.map(({ members = [], ...user }) => ({
       ...user,
-      membership: members?.[0] ?? null,
+      organizations: members.map((member) => member.organization),
     })),
     total,
   };
 }
 
+// App-wide numbers for the dashboard of a single-tenant app. With
+// organizations on, the dashboard shows getOrganizationStats instead.
 export async function getUserStats() {
   await requireSession();
-
-  const scope = await requireActiveOrganization();
-  const users = await userScope();
 
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [totalUsers, activeSessions, newUsers] = await Promise.all([
-    db.user.count({ where: users }),
-    db.session.count({
-      where: { expiresAt: { gt: now }, ...(scope && { user: users }) },
-    }),
-    scope
-      ? db.member.count({
-          where: {
-            organizationId: scope.organization.id,
-            createdAt: { gte: weekAgo },
-          },
-        })
-      : db.user.count({ where: { createdAt: { gte: weekAgo } } }),
+  const [total, activeSessions, recent] = await Promise.all([
+    db.user.count(),
+    db.session.count({ where: { expiresAt: { gt: now } } }),
+    db.user.count({ where: { createdAt: { gte: weekAgo } } }),
   ]);
 
-  return { totalUsers, activeSessions, newUsers };
-}
-
-export async function listUserOrganizations() {
-  const session = await requireSession();
-
-  const memberships = await db.member.findMany({
-    where: { userId: session.user.id },
-    orderBy: { organization: { name: "asc" } },
-    select: { role: true, organization: { select: { id: true, name: true } } },
-  });
-
-  return memberships.map(({ role, organization }) => ({
-    ...organization,
-    role,
-  }));
-}
-
-// Pending, unexpired invitations addressed to the signed-in user.
-export async function listPendingInvitations() {
-  const session = await requireSession();
-
-  return db.invitation.findMany({
-    where: {
-      email: session.user.email.toLowerCase(),
-      status: "pending",
-      expiresAt: { gt: new Date() },
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      role: true,
-      organization: { select: { name: true } },
-      user: { select: { name: true } },
-    },
-  });
+  return { total, activeSessions, recent };
 }

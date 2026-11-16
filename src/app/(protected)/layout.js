@@ -5,8 +5,12 @@ import { Header } from "@/components/header";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { organizationsEnabled } from "@/lib/app-config";
-import { listUserOrganizations } from "@/lib/data-helper";
-import { getActiveOrganization, getSession } from "@/lib/session";
+import {
+  getActiveOrganization,
+  listPendingInvitations,
+  listUserOrganizations,
+} from "@/lib/organization/queries";
+import { getSession } from "@/lib/session";
 
 export default async function ProtectedLayout({ children }) {
   const session = await getSession();
@@ -16,25 +20,32 @@ export default async function ProtectedLayout({ children }) {
   }
 
   // Independent lookups, so in parallel. Users without an organization still
-  // get here for their settings; (workspace)/layout.js gates the rest.
-  const [scope, organizations] = await Promise.all([
+  // get here — for onboarding and their own settings; (workspace)/layout.js
+  // gates the rest.
+  const [scope, organizations, invitations] = await Promise.all([
     getActiveOrganization(),
     organizationsEnabled ? listUserOrganizations() : [],
+    organizationsEnabled ? listPendingInvitations() : [],
   ]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header>
-        {scope && (
-          <OrganizationSwitcher
-            activeId={scope.organization.id}
-            organizations={organizations}
-          />
-        )}
-        <UserMenu
-          user={session.user}
-          noOrganization={organizationsEnabled && !scope}
-        />
+      <Header
+        context={
+          scope && (
+            <OrganizationSwitcher
+              active={{
+                id: scope.organization.id,
+                name: scope.organization.name,
+                role: scope.member.role,
+              }}
+              organizations={organizations}
+              invitations={invitations}
+            />
+          )
+        }
+      >
+        <UserMenu user={session.user} />
       </Header>
       <main className="flex-1">{children}</main>
       <Footer />

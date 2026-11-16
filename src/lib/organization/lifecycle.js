@@ -2,13 +2,19 @@ import "server-only";
 
 import { APIError } from "better-auth/api";
 
-import { db } from "./db";
+import { organizationsEnabled } from "../app-config";
+import { db } from "../db";
+
+// What happens to organizations as accounts come and go. Called from the
+// better-auth hooks in lib/auth.js, so nothing here may import lib/session.js
+// (which imports lib/auth.js) — queries that need the caller's session live in
+// ./queries.js instead.
 
 /**
  * The organization a new session should start in: the one the user last had
  * active, as long as they still belong to it, otherwise the one they joined
- * first. `null` when they belong to none — the protected layout then sends them
- * to onboarding.
+ * first. `null` when they belong to none — the workspace layout then sends
+ * them to onboarding.
  */
 export async function defaultOrganizationId(userId) {
   const [memberships, lastSession] = await Promise.all([
@@ -57,6 +63,8 @@ const ownedOrganizations = (userId) =>
  * check on the user row itself fires too late and strands a login-less user.
  */
 export async function assertNoOrphanedOrganizations(userId) {
+  if (!organizationsEnabled) return;
+
   const blocking = (await ownedOrganizations(userId)).filter(
     ({ organization: { members } }) =>
       members.length > 0 && !members.some((m) => m.role === "owner"),
@@ -65,13 +73,15 @@ export async function assertNoOrphanedOrganizations(userId) {
   if (blocking.length) {
     const names = blocking.map(({ organization }) => organization.name);
     throw new APIError("BAD_REQUEST", {
-      message: `Transfer ownership of ${names.join(", ")} before deleting this account.`,
+      message: `Make someone else an owner of ${names.join(", ")} before deleting this account.`,
     });
   }
 }
 
 // Organizations the user is alone in go with them.
 export async function deleteSoloOrganizations(userId) {
+  if (!organizationsEnabled) return;
+
   const solo = (await ownedOrganizations(userId))
     .filter(({ organization: { members } }) => members.length === 0)
     .map(({ organization }) => organization.id);

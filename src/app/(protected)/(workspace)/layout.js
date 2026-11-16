@@ -1,4 +1,4 @@
-import { requireActiveOrganization } from "@/lib/session";
+import { requireActiveOrganization } from "@/lib/organization/queries";
 
 // Pages that work inside an organization. Gated here rather than only by their
 // queries, which can run inside a Suspense boundary after streaming has started.

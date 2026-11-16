@@ -69,7 +69,7 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link href="/users">Go to user management</Link>
+              <Link href="/admin/users">Go to user management</Link>
             </Button>
           </CardContent>
         </Card>

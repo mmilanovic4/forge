@@ -5,19 +5,20 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// URL-safe identifier from free text. `trim: false` keeps a trailing dash so a
-// slug can be typed by hand without the separator vanishing mid-word.
-export function slugify(text, { trim = true } = {}) {
-  const slug = text
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    // "Alice's team" → "alices-team", not "alice-s-team".
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+/, "")
-    .slice(0, 48);
-  return trim ? slug.replace(/-+$/, "") : slug;
+// URL-safe identifier from free text.
+export function slugify(text) {
+  return (
+    text
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      // "Alice's team" → "alices-team", not "alice-s-team".
+      .replace(/['’]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+/, "")
+      .slice(0, 48)
+      .replace(/-+$/, "")
+  );
 }
 
 // Never resolved for real — only there so a relative value has something to
