@@ -48,11 +48,16 @@ export function OrganizationSwitcher({ active, organizations, invitations }) {
         <Button
           variant="ghost"
           size="sm"
-          className="max-w-44 min-w-0 gap-2 pl-1.5 sm:max-w-64"
+          className="h-8 max-w-44 min-w-0 gap-2 pl-1.25 sm:max-w-64"
           disabled={pending !== null}
           aria-label={`Organization menu, current: ${active.name}`}
         >
-          <OrganizationAvatar name={active.name} />
+          {/* 20px in the 32px button (1px border included) leaves an even
+              6px around the circle. */}
+          <OrganizationAvatar
+            name={active.name}
+            className="data-[size=sm]:size-5"
+          />
           <span className="truncate">{active.name}</span>
           {invitations.length > 0 && (
             <span
